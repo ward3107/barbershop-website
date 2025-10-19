@@ -70,12 +70,19 @@ export default function NotificationManager() {
   const showInPageAlert = (booking: any) => {
     // Create floating alert
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'fixed top-4 right-4 z-50 animate-slide-in';
+    alertDiv.className = 'fixed top-20 right-4 z-50 animate-slide-in';
     alertDiv.innerHTML = `
-      <div class="bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black p-4 rounded-xl shadow-2xl max-w-md">
+      <div class="bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black p-4 rounded-xl shadow-2xl max-w-md relative">
+        <button
+          onclick="this.closest('.fixed').remove()"
+          class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg transition-colors"
+          aria-label="Close notification"
+        >
+          ✕
+        </button>
         <div class="flex items-center gap-3">
           <div class="text-2xl">🔔</div>
-          <div>
+          <div class="flex-1">
             <div class="font-bold text-lg">New Booking!</div>
             <div>${booking.customerName} - ${booking.service}</div>
             <div class="text-sm opacity-80">${booking.customerPhone} at ${booking.time}</div>
@@ -90,7 +97,9 @@ export default function NotificationManager() {
 
     // Remove after 10 seconds
     setTimeout(() => {
-      alertDiv.remove();
+      if (alertDiv.parentNode) {
+        alertDiv.remove();
+      }
     }, 10000);
   };
 
