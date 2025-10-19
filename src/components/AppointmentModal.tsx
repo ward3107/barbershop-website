@@ -163,7 +163,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-4xl bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden"
+        className="max-w-4xl w-[95vw] sm:w-full bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden max-h-[90vh] overflow-y-auto"
         onMouseMove={handleMouseMove}
       >
         {/* Golden gradient overlay */}
@@ -182,7 +182,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
         />
 
         {/* Header with crown animation */}
-        <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-6">
+        <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-4 md:p-6">
           <AnimatePresence>
             {open && (
               <motion.div
@@ -201,7 +201,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-center text-3xl font-bold mt-8"
+            className="text-center text-2xl md:text-3xl font-bold mt-8"
             style={{
               background: 'linear-gradient(135deg, #FFD700, #FFA500, #FFD700)',
               WebkitBackgroundClip: 'text',
@@ -217,7 +217,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="p-8"
+          className="p-4 md:p-8"
         >
           {step === 'service' ? (
             <>
@@ -313,34 +313,36 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 {t('chooseDateTime')}
               </p>
 
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {/* Calendar Section */}
-                <div className="relative">
+                <div className="relative w-full">
                   <div className="absolute -inset-2 bg-gradient-to-r from-[#FFD700]/10 via-[#C4A572]/5 to-[#FFD700]/10 rounded-xl blur-xl" />
-                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <CalendarIcon className="w-5 h-5 text-[#FFD700]" />
-                      <h3 className="text-lg font-semibold text-[#FFD700]">Select Date</h3>
+                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-3 md:p-4">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                      <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-[#FFD700]" />
+                      <h3 className="text-base md:text-lg font-semibold text-[#FFD700]">Select Date</h3>
                     </div>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-md bg-black text-white [&_.rdp-day_button:hover]:bg-[#FFD700]/20 [&_.rdp-day_button[aria-selected]]:bg-[#FFD700] [&_.rdp-day_button[aria-selected]]:text-black"
-                      disabled={(date) => date < new Date()}
-                    />
+                    <div className="w-full overflow-x-auto">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="rounded-md bg-black text-white [&_.rdp-day_button:hover]:bg-[#FFD700]/20 [&_.rdp-day_button[aria-selected]]:bg-[#FFD700] [&_.rdp-day_button[aria-selected]]:text-black mx-auto"
+                        disabled={(date) => date < new Date()}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Time Slots Section */}
-                <div className="relative">
+                <div className="relative w-full">
                   <div className="absolute -inset-2 bg-gradient-to-r from-[#FFD700]/10 via-[#C4A572]/5 to-[#FFD700]/10 rounded-xl blur-xl" />
-                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Clock className="w-5 h-5 text-[#FFD700]" />
-                      <h3 className="text-lg font-semibold text-[#FFD700]">{t('selectTime')}</h3>
+                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-3 md:p-4">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                      <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#FFD700]" />
+                      <h3 className="text-base md:text-lg font-semibold text-[#FFD700]">{t('selectTime')}</h3>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                       {timeSlots.map((time, index) => (
                         <motion.button
                           key={time}
