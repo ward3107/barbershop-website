@@ -10,7 +10,6 @@ import AccessibilityMenu from './AccessibilityMenu';
 import LuxuryAnnouncementBar from './LuxuryAnnouncementBar';
 import GalacticAppointmentButton from './GalacticAppointmentButton';
 import NotificationManager from './NotificationManager';
-import WhatsAppQuickSender from './WhatsAppQuickSender';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LandingPage() {
@@ -304,7 +303,6 @@ export default function LandingPage() {
       <CookieConsent />
       <AccessibilityMenu />
       <NotificationManager />
-      <WhatsAppQuickSender />
 
       {/* Animations for vivid background */}
       <style>{`
