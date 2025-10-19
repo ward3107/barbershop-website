@@ -1,13 +1,16 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, Home, Image } from 'lucide-react';
 import Logo from './Logo';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Navigation() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
   const navItems = [
-    { key: 'home', href: '#home' },
-    { key: 'gallery', href: '#gallery' },
+    { key: 'home', href: '#home', icon: Home },
+    { key: 'gallery', href: '#gallery', icon: Image },
   ];
 
   return (
@@ -21,6 +24,7 @@ export default function Navigation() {
         <div className="flex items-center gap-12">
           <Logo />
 
+          {/* Desktop Menu */}
           <div className="hidden md:flex gap-12">
             {navItems.map((item, index) => (
               <motion.a
@@ -38,8 +42,52 @@ export default function Navigation() {
           </div>
         </div>
 
-        <LanguageSwitcher />
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white hover:text-[#C4A572] transition-colors"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden overflow-hidden bg-black/95 backdrop-blur-md border-t border-[#C4A572]/30 mt-4"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-2">
+              {navItems.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <motion.a
+                    key={item.key}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 * index }}
+                    className="flex items-center gap-3 text-white font-semibold text-lg hover:text-[#C4A572] transition-colors py-3 px-4 rounded-lg hover:bg-[#C4A572]/10"
+                  >
+                    <Icon className="w-5 h-5" />
+                    {t(item.key)}
+                  </motion.a>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }

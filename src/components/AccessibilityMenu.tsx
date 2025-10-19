@@ -104,7 +104,7 @@ export default function AccessibilityMenu() {
                 onClick={decreaseFontSize}
                 variant="outline"
                 size="icon"
-                className="border-[#C4A572] text-white hover:bg-[#C4A572] hover:text-black"
+                className="border-[#C4A572] bg-zinc-900 text-white hover:bg-[#C4A572] hover:text-black"
               >
                 <ZoomOut className="h-5 w-5" />
               </Button>
@@ -113,7 +113,7 @@ export default function AccessibilityMenu() {
                 onClick={increaseFontSize}
                 variant="outline"
                 size="icon"
-                className="border-[#C4A572] text-white hover:bg-[#C4A572] hover:text-black"
+                className="border-[#C4A572] bg-zinc-900 text-white hover:bg-[#C4A572] hover:text-black"
               >
                 <ZoomIn className="h-5 w-5" />
               </Button>
@@ -180,7 +180,7 @@ export default function AccessibilityMenu() {
           <Button
             onClick={resetSettings}
             variant="outline"
-            className="w-full border-[#C4A572] text-white hover:bg-[#C4A572] hover:text-black gap-2"
+            className="w-full border-[#C4A572] bg-zinc-900 text-white hover:bg-[#C4A572] hover:text-black gap-2"
           >
             <RotateCcw className="h-4 w-4" />
             {t('resetAccessibility')}

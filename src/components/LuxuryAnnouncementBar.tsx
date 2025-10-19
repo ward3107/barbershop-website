@@ -136,10 +136,10 @@ export default function LuxuryAnnouncementBar() {
           }}
         />
 
-        <div className="relative flex items-center justify-between px-8 py-6">
+        <div className="relative flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-8 py-4 md:py-6 gap-3 md:gap-0">
 
-          {/* Left side - Luxury branding */}
-          <div className="flex items-center gap-4">
+          {/* Left side - Luxury branding - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-4">
             <div className="relative">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FFD700] to-[#C4A572] p-[2px]">
                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
@@ -161,7 +161,7 @@ export default function LuxuryAnnouncementBar() {
           </div>
 
           {/* Center - Animated announcement */}
-          <div className="flex-1 mx-8 overflow-hidden">
+          <div className="flex-1 w-full md:mx-8 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -169,7 +169,7 @@ export default function LuxuryAnnouncementBar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
                 transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
-                className="flex items-center justify-center gap-3"
+                className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
               >
                 {/* Type indicator badge */}
                 <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${typeColors[currentAnnouncement.type]}`}>
@@ -180,7 +180,7 @@ export default function LuxuryAnnouncementBar() {
                 </div>
 
                 {/* Announcement text with golden gradient */}
-                <p className="text-center font-semibold tracking-wide"
+                <p className="text-center text-sm sm:text-base font-semibold tracking-wide px-2"
                   style={{
                     background: 'linear-gradient(90deg, #FFD700, #FFA500, #FFD700)',
                     backgroundSize: '200% 100%',
@@ -197,9 +197,9 @@ export default function LuxuryAnnouncementBar() {
           </div>
 
           {/* Right side - Status indicators */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {/* Live indicator */}
-            <div className="flex items-center gap-2 px-3 py-1 bg-red-500/20 rounded-full border border-red-500/50">
+            <div className="flex items-center gap-2 px-2 md:px-3 py-1 bg-red-500/20 rounded-full border border-red-500/50">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -215,7 +215,7 @@ export default function LuxuryAnnouncementBar() {
                   onClick={() => setCurrentIndex(index)}
                   className={`h-2 w-2 rounded-full transition-all ${
                     index === currentIndex
-                      ? 'bg-[#FFD700] w-6'
+                      ? 'bg-[#FFD700] w-4 md:w-6'
                       : 'bg-[#C4A572]/50 hover:bg-[#C4A572]'
                   }`}
                 />
