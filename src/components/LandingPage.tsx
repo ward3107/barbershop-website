@@ -302,6 +302,15 @@ export default function LandingPage() {
       <CookieConsent />
       <AccessibilityMenu />
 
+      {/* Hidden Admin Access - Small link in bottom right */}
+      <a
+        href="#admin"
+        className="fixed bottom-4 right-4 text-[10px] text-gray-700 hover:text-[#FFD700] transition-colors opacity-30 hover:opacity-100 z-30"
+        title="Admin Access"
+      >
+        Admin
+      </a>
+
       {/* Animations for vivid background */}
       <style>{`
         @keyframes gradient-shift {
