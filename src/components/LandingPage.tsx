@@ -9,7 +9,6 @@ import CookieConsent from './CookieConsent';
 import AccessibilityMenu from './AccessibilityMenu';
 import LuxuryAnnouncementBar from './LuxuryAnnouncementBar';
 import GalacticAppointmentButton from './GalacticAppointmentButton';
-import TestNotificationButton from './TestNotificationButton';
 import NotificationManager from './NotificationManager';
 import WhatsAppQuickSender from './WhatsAppQuickSender';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -280,7 +279,6 @@ export default function LandingPage() {
       <ScrollToTop />
       <CookieConsent />
       <AccessibilityMenu />
-      <TestNotificationButton />
       <NotificationManager />
       <WhatsAppQuickSender />
 

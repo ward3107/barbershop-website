@@ -44,7 +44,7 @@ ${window.location.origin}/admin
   return (
     <motion.button
       onClick={handleTestNotification}
-      className="fixed bottom-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-green-600 transition-colors"
+      className="fixed bottom-4 left-4 z-50 bg-green-500 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-green-600 transition-colors"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
