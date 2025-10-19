@@ -305,10 +305,10 @@ export default function LandingPage() {
       {/* Hidden Admin Access - Small link in bottom right */}
       <a
         href="#admin"
-        className="fixed bottom-4 right-4 text-[10px] text-gray-700 hover:text-[#FFD700] transition-colors opacity-30 hover:opacity-100 z-30"
+        className="fixed bottom-4 right-24 text-xs text-gray-400 hover:text-[#FFD700] transition-colors z-50 bg-black/50 px-2 py-1 rounded"
         title="Admin Access"
       >
-        Admin
+        🔒 Admin
       </a>
 
       {/* Animations for vivid background */}
