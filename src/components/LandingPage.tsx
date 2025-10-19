@@ -103,7 +103,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8 }}
-                    className="absolute inset-0 -m-4 sm:-m-6 md:-m-8 lg:-m-10"
+                    className="absolute inset-0 -m-4 sm:-m-6 md:-m-8 lg:-m-10 hidden md:block"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(196,165,114,0.2) 25%, rgba(255,140,0,0.2) 50%, rgba(255,215,0,0.2) 75%, rgba(196,165,114,0.2) 100%)',
                       backgroundSize: '400% 400%',
@@ -111,10 +111,21 @@ export default function LandingPage() {
                       filter: 'blur(35px)',
                       borderRadius: '50%',
                       transform: 'scale(1.3)',
+                      willChange: 'transform, opacity',
                     }}
                   />
 
-                  {/* Golden Glow Layer for SHOKHA */}
+                  {/* Simpler background for mobile - no animation */}
+                  <div
+                    className="absolute inset-0 -m-4 md:hidden"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.1) 50%, transparent 80%)',
+                      filter: 'blur(20px)',
+                      borderRadius: '50%',
+                    }}
+                  />
+
+                  {/* Golden Glow Layer for SHOKHA - Desktop only */}
                   <motion.div
                     animate={{
                       opacity: [0.4, 0.7, 0.4],
@@ -125,10 +136,11 @@ export default function LandingPage() {
                       repeat: Infinity,
                       ease: "easeInOut"
                     }}
-                    className="absolute inset-0 -m-3 sm:-m-5 md:-m-7"
+                    className="absolute inset-0 -m-3 sm:-m-5 md:-m-7 hidden md:block"
                     style={{
                       background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0.15) 40%, transparent 70%)',
                       filter: 'blur(25px)',
+                      willChange: 'transform, opacity',
                     }}
                   />
 
@@ -172,12 +184,12 @@ export default function LandingPage() {
 
                 {/* BARBERSHOP - Second Word (Never breaks) */}
                 <div className="relative inline-block">
-                  {/* Vivid Animated Background for BARBERSHOP */}
+                  {/* Vivid Animated Background for BARBERSHOP - Desktop only */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="absolute inset-0 -m-4 sm:-m-6 md:-m-8 lg:-m-10"
+                    className="absolute inset-0 -m-4 sm:-m-6 md:-m-8 lg:-m-10 hidden md:block"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(196,165,114,0.2) 25%, rgba(255,140,0,0.2) 50%, rgba(255,215,0,0.2) 75%, rgba(196,165,114,0.2) 100%)',
                       backgroundSize: '400% 400%',
@@ -185,10 +197,21 @@ export default function LandingPage() {
                       filter: 'blur(35px)',
                       borderRadius: '50%',
                       transform: 'scale(1.3)',
+                      willChange: 'transform, opacity',
                     }}
                   />
 
-                  {/* Golden Glow Layer for BARBERSHOP */}
+                  {/* Simpler background for mobile - no animation */}
+                  <div
+                    className="absolute inset-0 -m-4 md:hidden"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.1) 50%, transparent 80%)',
+                      filter: 'blur(20px)',
+                      borderRadius: '50%',
+                    }}
+                  />
+
+                  {/* Golden Glow Layer for BARBERSHOP - Desktop only */}
                   <motion.div
                     animate={{
                       opacity: [0.4, 0.7, 0.4],
@@ -200,10 +223,11 @@ export default function LandingPage() {
                       ease: "easeInOut",
                       delay: 0.5
                     }}
-                    className="absolute inset-0 -m-3 sm:-m-5 md:-m-7"
+                    className="absolute inset-0 -m-3 sm:-m-5 md:-m-7 hidden md:block"
                     style={{
                       background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0.15) 40%, transparent 70%)',
                       filter: 'blur(25px)',
+                      willChange: 'transform, opacity',
                     }}
                   />
 
