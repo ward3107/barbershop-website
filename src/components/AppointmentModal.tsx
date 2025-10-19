@@ -1,0 +1,592 @@
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Scissors, Crown, Clock, Calendar as CalendarIcon,
+  Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { createBooking } from './BookingSystem';
+import { sendBookingToMake } from '@/services/makeWebhook';
+
+interface AppointmentModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const timeSlots = [
+  '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
+  '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM'
+];
+
+const services = [
+  {
+    id: 'beard',
+    nameEn: 'Beard Trim',
+    nameAr: 'تشذيب الذقن',
+    nameHe: 'גילוח זקן',
+    descEn: 'Professional beard trimming and shaping',
+    descAr: 'تشذيب وتشكيل احترافي للذقن',
+    descHe: 'גילוח ועיצוב זקן מקצועי',
+    price: '₪20',
+    duration: '20 min',
+    icon: <Scissors className="w-5 h-5" />
+  },
+  {
+    id: 'haircut-beard',
+    nameEn: 'Hair Cut + Beard Trim',
+    nameAr: 'قص الشعر والذقن',
+    nameHe: 'תספורת וגילוח זקן',
+    descEn: 'Complete grooming - hair and beard',
+    descAr: 'عناية كاملة - قص الشعر والذقن',
+    descHe: 'טיפול מלא - תספורת וזקן',
+    price: '₪50',
+    duration: '40 min',
+    popular: true,
+    icon: <Crown className="w-5 h-5" />
+  }
+];
+
+export default function AppointmentModal({ open, onOpenChange }: AppointmentModalProps) {
+  const [step, setStep] = useState<'service' | 'datetime' | 'contact'>('service');
+  const [selectedService, setSelectedService] = useState<string>('');
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [customerName, setCustomerName] = useState<string>('');
+  const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [customerEmail, setCustomerEmail] = useState<string>('');
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const { t, language } = useLanguage();
+
+  // Load saved customer info when modal opens
+  useEffect(() => {
+    if (open) {
+      const savedInfo = localStorage.getItem('shokha_customer_info');
+      if (savedInfo) {
+        try {
+          const { name, phone, email } = JSON.parse(savedInfo);
+          setCustomerName(name || '');
+          setCustomerPhone(phone || '');
+          setCustomerEmail(email || '');
+        } catch (error) {
+          console.error('Error loading saved customer info:', error);
+        }
+      }
+    }
+  }, [open]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setMousePosition({ x, y });
+  };
+
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedService(serviceId);
+    setStep('datetime');
+  };
+
+  const handleDateTimeNext = () => {
+    if (date && selectedTime) {
+      setStep('contact');
+    }
+  };
+
+  const handleBooking = async () => {
+    if (date && selectedTime && selectedService && customerName && customerPhone) {
+      const service = services.find(s => s.id === selectedService);
+      const serviceName = language === 'ar' ? service?.nameAr : language === 'he' ? service?.nameHe : service?.nameEn;
+
+      try {
+        // Create booking request
+        const booking = await createBooking(
+          customerName,
+          customerPhone,
+          serviceName || '',
+          date,
+          selectedTime,
+          customerEmail
+        );
+
+        // Save customer info for next time
+        localStorage.setItem('shokha_customer_info', JSON.stringify({
+          name: customerName,
+          phone: customerPhone,
+          email: customerEmail
+        }));
+
+        // Send to Make.com for automatic WhatsApp (FREE option)
+        console.log('📱 Sending booking to Make.com...');
+        await sendBookingToMake(booking);
+
+        // OR use Twilio (paid option - uncomment if using Twilio)
+        // await notifyOwnerNewBooking(booking);
+
+        // Show confirmation message
+        const confirmMessage = language === 'ar'
+          ? `✅ تم إرسال طلب الحجز!\n\nتم إرسال إشعار تلقائي للمالك عبر WhatsApp.\nستصلك رسالة تأكيد قريباً.\n\nالخدمة: ${serviceName}\nالتاريخ: ${date.toLocaleDateString()}\nالوقت: ${selectedTime}`
+          : language === 'he'
+          ? `✅ בקשת ההזמנה נשלחה!\n\nהודעה אוטומטית נשלחה לבעלים ב-WhatsApp.\nתקבל הודעת אישור בקרוב.\n\nשירות: ${serviceName}\nתאריך: ${date.toLocaleDateString()}\nשעה: ${selectedTime}`
+          : `✅ Booking request sent!\n\nAutomatic WhatsApp sent to owner.\nYou'll receive confirmation soon.\n\nService: ${serviceName}\nDate: ${date.toLocaleDateString()}\nTime: ${selectedTime}`;
+
+        alert(confirmMessage);
+
+        // Reset and close
+        onOpenChange(false);
+        setStep('service');
+        setSelectedService('');
+        setSelectedTime('');
+        setCustomerName('');
+        setCustomerPhone('');
+        setCustomerEmail('');
+      } catch (error) {
+        console.error('Booking error:', error);
+        alert(language === 'ar' ? 'حدث خطأ. حاول مرة أخرى.' : language === 'he' ? 'אירעה שגיאה. נסה שוב.' : 'An error occurred. Please try again.');
+      }
+    }
+  };
+
+  const handleClose = (isOpen: boolean) => {
+    onOpenChange(isOpen);
+    if (!isOpen) {
+      setTimeout(() => {
+        setStep('service');
+        setSelectedService('');
+        setSelectedTime('');
+      }, 300);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent
+        className="max-w-4xl bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Golden gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 pointer-events-none" />
+
+        {/* Mirror reflection effect */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(
+              circle at ${mousePosition.x}% ${mousePosition.y}%,
+              rgba(255, 215, 0, 0.1) 0%,
+              transparent 50%
+            )`
+          }}
+        />
+
+        {/* Header with crown animation */}
+        <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-6">
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                exit={{ scale: 0, rotate: 180 }}
+                transition={{ duration: 0.6, type: 'spring' }}
+                className="absolute top-4 left-1/2 -translate-x-1/2 z-10"
+              >
+                <Crown className="h-12 w-12 text-[#FFD700] drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-center text-3xl font-bold mt-8"
+            style={{
+              background: 'linear-gradient(135deg, #FFD700, #FFA500, #FFD700)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
+            SHOKHA Booking
+          </motion.h1>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="p-8"
+        >
+          {step === 'service' ? (
+            <>
+              <h2 className="text-2xl font-bold text-[#FFD700] text-center mb-2">
+                {t('selectService')}
+              </h2>
+              <p className="text-gray-400 text-center mb-8">
+                {t('chooseService')}
+              </p>
+
+              <div className="grid gap-4 max-w-3xl mx-auto">
+                {services.map((service, index) => (
+                  <motion.div
+                    key={service.id}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <button
+                      onClick={() => handleServiceSelect(service.id)}
+                      className="relative w-full group overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
+                    >
+                      {/* Black mirror base */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black via-zinc-900 to-black" />
+
+                      {/* Golden border gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700]/20 via-[#C4A572]/10 to-[#FFD700]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                        style={{
+                          background: 'linear-gradient(105deg, transparent 40%, rgba(255,215,0,0.3) 50%, transparent 60%)',
+                          animation: 'shimmer 1.5s infinite'
+                        }}
+                      />
+
+                      {/* Content */}
+                      <div className="relative px-6 py-5 border-2 border-[#FFD700]/30 group-hover:border-[#FFD700]/60 rounded-xl transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-start gap-4">
+                            {/* Icon container */}
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FFD700]/20 to-[#C4A572]/20 flex items-center justify-center group-hover:from-[#FFD700]/30 group-hover:to-[#C4A572]/30 transition-all duration-300">
+                              <span className="text-[#FFD700]">{service.icon}</span>
+                            </div>
+
+                            {/* Service details */}
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-white font-bold text-lg group-hover:text-[#FFD700] transition-colors duration-300">
+                                  {language === 'ar' ? service.nameAr : language === 'he' ? service.nameHe : service.nameEn}
+                                </h3>
+                                {service.popular && (
+                                  <span className="px-2 py-1 text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full font-bold">
+                                    POPULAR
+                                  </span>
+                                )}
+                                {'vip' in service && (service as any).vip && (
+                                  <span className="px-2 py-1 text-xs bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black rounded-full font-bold">
+                                    VIP
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-gray-400 text-sm mt-1">
+                                {language === 'ar' ? service.descAr : language === 'he' ? service.descHe : service.descEn}
+                              </p>
+                              <div className="flex items-center gap-4 mt-2">
+                                <span className="flex items-center gap-1 text-[#C4A572] text-sm">
+                                  <Clock className="w-4 h-4" />
+                                  {service.duration}
+                                </span>
+                                <span className="text-[#FFD700] font-bold text-lg">
+                                  {service.price}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Arrow icon */}
+                          <ChevronRight className="w-6 h-6 text-[#FFD700] opacity-50 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          ) : step === 'datetime' ? (
+            <>
+              <h2 className="text-2xl font-bold text-[#FFD700] text-center mb-2">
+                {t('bookAppointment')}
+              </h2>
+              <p className="text-gray-400 text-center mb-8">
+                {t('chooseDateTime')}
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Calendar Section */}
+                <div className="relative">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-[#FFD700]/10 via-[#C4A572]/5 to-[#FFD700]/10 rounded-xl blur-xl" />
+                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CalendarIcon className="w-5 h-5 text-[#FFD700]" />
+                      <h3 className="text-lg font-semibold text-[#FFD700]">Select Date</h3>
+                    </div>
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="rounded-md bg-black text-white [&_.rdp-day_button:hover]:bg-[#FFD700]/20 [&_.rdp-day_button[aria-selected]]:bg-[#FFD700] [&_.rdp-day_button[aria-selected]]:text-black"
+                      disabled={(date) => date < new Date()}
+                    />
+                  </div>
+                </div>
+
+                {/* Time Slots Section */}
+                <div className="relative">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-[#FFD700]/10 via-[#C4A572]/5 to-[#FFD700]/10 rounded-xl blur-xl" />
+                  <div className="relative bg-black border-2 border-[#FFD700]/30 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Clock className="w-5 h-5 text-[#FFD700]" />
+                      <h3 className="text-lg font-semibold text-[#FFD700]">{t('selectTime')}</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {timeSlots.map((time, index) => (
+                        <motion.button
+                          key={time}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.02 }}
+                          onClick={() => setSelectedTime(time)}
+                          className={`
+                            relative group px-4 py-3 rounded-lg font-medium transition-all duration-300
+                            ${selectedTime === time
+                              ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black shadow-[0_0_20px_rgba(255,215,0,0.3)]'
+                              : 'bg-zinc-900 border border-[#FFD700]/30 text-gray-300 hover:border-[#FFD700]/60 hover:text-[#FFD700]'
+                            }
+                          `}
+                        >
+                          {selectedTime === time && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-1 -right-1"
+                            >
+                              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            </motion.div>
+                          )}
+                          <span className="relative z-10">{time}</span>
+                          {selectedTime !== time && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700]/0 via-[#FFD700]/10 to-[#FFD700]/0 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                          )}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex justify-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setStep('service')}
+                  className="px-8 py-4 bg-zinc-900 border-2 border-[#FFD700]/30 text-[#FFD700] font-semibold rounded-xl hover:border-[#FFD700]/60 hover:bg-[#FFD700]/10 transition-all duration-300"
+                >
+                  {t('back')}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDateTimeNext}
+                  disabled={!date || !selectedTime}
+                  className="relative px-12 py-4 font-bold text-black rounded-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <span className="relative z-10 flex items-center gap-2">
+                    {language === 'ar' ? 'التالي' : language === 'he' ? 'הבא' : 'Next'}
+                    <ChevronRight className="w-5 h-5" />
+                  </span>
+                </motion.button>
+              </div>
+            </>
+          ) : step === 'contact' ? (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-[#FFD700] text-center flex-1">
+                  {language === 'ar' ? 'معلومات الاتصال' : language === 'he' ? 'פרטי יצירת קשר' : 'Contact Information'}
+                </h2>
+                {customerName && (
+                  <button
+                    onClick={() => {
+                      if (confirm(language === 'ar' ? 'هل تريد حذف المعلومات المحفوظة؟' : language === 'he' ? 'האם למחוק את המידע השמור?' : 'Clear saved information?')) {
+                        localStorage.removeItem('shokha_customer_info');
+                        setCustomerName('');
+                        setCustomerPhone('');
+                        setCustomerEmail('');
+                      }
+                    }}
+                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    {language === 'ar' ? 'مسح المعلومات' : language === 'he' ? 'מחק מידע' : 'Clear Info'}
+                  </button>
+                )}
+              </div>
+              <p className="text-gray-400 text-center mb-8">
+                {customerName
+                  ? (language === 'ar' ? '✓ تم تحميل معلوماتك المحفوظة' : language === 'he' ? '✓ המידע שלך נטען' : '✓ Your saved info loaded')
+                  : (language === 'ar' ? 'أدخل معلوماتك لتأكيد الحجز' : language === 'he' ? 'הזן את פרטיך לאישור ההזמנה' : 'Enter your details to confirm booking')
+                }
+              </p>
+
+              <div className="max-w-2xl mx-auto space-y-6">
+                {/* Selected Service Summary */}
+                <div className="bg-zinc-900/50 border border-[#FFD700]/30 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-gray-400 text-sm">
+                      {language === 'ar' ? 'الخدمة المختارة' : language === 'he' ? 'שירות נבחר' : 'Selected Service'}
+                    </span>
+                    <span className="text-[#FFD700] font-semibold">
+                      {(() => {
+                        const service = services.find(s => s.id === selectedService);
+                        return language === 'ar' ? service?.nameAr : language === 'he' ? service?.nameHe : service?.nameEn;
+                      })()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">
+                      {language === 'ar' ? 'التاريخ والوقت' : language === 'he' ? 'תאריך ושעה' : 'Date & Time'}
+                    </span>
+                    <span className="text-[#FFD700] font-semibold">
+                      {date?.toLocaleDateString()} - {selectedTime}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Contact Form */}
+                <div className="space-y-4">
+                  {/* Name Field */}
+                  <div className="relative group">
+                    <label className="block text-[#FFD700] text-sm font-semibold mb-2">
+                      {language === 'ar' ? 'الاسم الكامل *' : language === 'he' ? 'שם מלא *' : 'Full Name *'}
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        placeholder={language === 'ar' ? 'أدخل اسمك الكامل' : language === 'he' ? 'הזן את שמך המלא' : 'Enter your full name'}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Field */}
+                  <div className="relative group">
+                    <label className="block text-[#FFD700] text-sm font-semibold mb-2">
+                      {language === 'ar' ? 'رقم الهاتف *' : language === 'he' ? 'מספר טלפון *' : 'Phone Number *'}
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
+                      <input
+                        type="tel"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        placeholder={language === 'ar' ? 'أدخل رقم هاتفك' : language === 'he' ? 'הזן מספר טלפון' : 'Enter your phone number'}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Field (Optional) */}
+                  <div className="relative group">
+                    <label className="block text-[#FFD700] text-sm font-semibold mb-2">
+                      {language === 'ar' ? 'البريد الإلكتروني (اختياري)' : language === 'he' ? 'דואר אלקטרוני (אופציונלי)' : 'Email (Optional)'}
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
+                      <input
+                        type="email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : language === 'he' ? 'הזן כתובת דואר אלקטרוני' : 'Enter your email'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Info Message */}
+                  <div className="flex items-start gap-3 p-4 bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-[#FFD700] mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-[#C4A572]">
+                      {language === 'ar'
+                        ? 'سيتم مراجعة حجزك من قبل المالك. ستتلقى رسالة تأكيد على هاتفك عند الموافقة على الحجز.'
+                        : language === 'he'
+                        ? 'ההזמנה שלך תיבדק על ידי הבעלים. תקבל הודעת אישור לטלפון שלך כשההזמנה תאושר.'
+                        : 'Your booking will be reviewed by the owner. You will receive a confirmation message on your phone when the booking is approved.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex justify-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setStep('datetime')}
+                  className="px-8 py-4 bg-zinc-900 border-2 border-[#FFD700]/30 text-[#FFD700] font-semibold rounded-xl hover:border-[#FFD700]/60 hover:bg-[#FFD700]/10 transition-all duration-300"
+                >
+                  {t('back')}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleBooking}
+                  disabled={!customerName || !customerPhone}
+                  className="relative px-12 py-4 font-bold text-black rounded-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <span className="relative z-10 flex items-center gap-2">
+                    {language === 'ar' ? 'إرسال طلب الحجز' : language === 'he' ? 'שלח בקשת הזמנה' : 'Send Booking Request'}
+                    <Sparkles className="w-5 h-5" />
+                  </span>
+                </motion.button>
+              </div>
+            </>
+          ) : null}
+        </motion.div>
+
+        <style>{`
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+
+          @keyframes background-animate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+
+          .background-animate {
+            background-size: 200% 200%;
+            animation: background-animate 3s ease infinite;
+          }
+
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 3px;
+          }
+
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #FFD700, #C4A572);
+            border-radius: 3px;
+          }
+        `}</style>
+      </DialogContent>
+    </Dialog>
+  );
+}
