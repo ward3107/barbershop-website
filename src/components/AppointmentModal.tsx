@@ -127,10 +127,10 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
 
         // Show confirmation message
         const confirmMessage = language === 'ar'
-          ? `✅ تم إرسال طلب الحجز!\n\nتم إرسال إشعار تلقائي للمالك عبر WhatsApp.\nستصلك رسالة تأكيد قريباً.\n\nالخدمة: ${serviceName}\nالتاريخ: ${date.toLocaleDateString()}\nالوقت: ${selectedTime}`
+          ? `✅ تم إرسال طلب الحجز بنجاح!\n\nالخدمة: ${serviceName}\nالتاريخ: ${date.toLocaleDateString()}\nالوقت: ${selectedTime}\n\n⏳ في انتظار موافقة الصالون\nستصلك رسالة تأكيد عبر WhatsApp قريباً`
           : language === 'he'
-          ? `✅ בקשת ההזמנה נשלחה!\n\nהודעה אוטומטית נשלחה לבעלים ב-WhatsApp.\nתקבל הודעת אישור בקרוב.\n\nשירות: ${serviceName}\nתאריך: ${date.toLocaleDateString()}\nשעה: ${selectedTime}`
-          : `✅ Booking request sent!\n\nAutomatic WhatsApp sent to owner.\nYou'll receive confirmation soon.\n\nService: ${serviceName}\nDate: ${date.toLocaleDateString()}\nTime: ${selectedTime}`;
+          ? `✅ בקשת ההזמנה נשלחה בהצלחה!\n\nשירות: ${serviceName}\nתאריך: ${date.toLocaleDateString()}\nשעה: ${selectedTime}\n\n⏳ ממתין לאישור הספרייה\nתקבל הודעת אישור ב-WhatsApp בקרוב`
+          : `✅ Booking request sent successfully!\n\nService: ${serviceName}\nDate: ${date.toLocaleDateString()}\nTime: ${selectedTime}\n\n⏳ Waiting for salon approval\nYou will receive a WhatsApp confirmation soon`;
 
         alert(confirmMessage);
 

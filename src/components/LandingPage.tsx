@@ -9,7 +9,6 @@ import CookieConsent from './CookieConsent';
 import AccessibilityMenu from './AccessibilityMenu';
 import LuxuryAnnouncementBar from './LuxuryAnnouncementBar';
 import GalacticAppointmentButton from './GalacticAppointmentButton';
-import NotificationManager from './NotificationManager';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LandingPage() {
@@ -302,7 +301,6 @@ export default function LandingPage() {
       <ScrollToTop />
       <CookieConsent />
       <AccessibilityMenu />
-      <NotificationManager />
 
       {/* Animations for vivid background */}
       <style>{`
