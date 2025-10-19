@@ -343,37 +343,27 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       <h3 className="text-base md:text-lg font-semibold text-[#FFD700]">{t('selectTime')}</h3>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {timeSlots.map((time, index) => (
-                        <motion.button
+                      {timeSlots.map((time) => (
+                        <button
                           key={time}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.02 }}
                           onClick={() => setSelectedTime(time)}
                           className={`
-                            relative group px-4 py-3 rounded-lg font-medium transition-all duration-300
+                            relative px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-colors duration-200
                             ${selectedTime === time
-                              ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black shadow-[0_0_20px_rgba(255,215,0,0.3)]'
+                              ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black'
                               : 'bg-zinc-900 border border-[#FFD700]/30 text-gray-300 hover:border-[#FFD700]/60 hover:text-[#FFD700]'
                             }
                           `}
                         >
                           {selectedTime === time && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute -top-1 -right-1"
-                            >
+                            <div className="absolute -top-1 -right-1">
                               <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                                 <Check className="w-3 h-3 text-white" />
                               </div>
-                            </motion.div>
+                            </div>
                           )}
-                          <span className="relative z-10">{time}</span>
-                          {selectedTime !== time && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700]/0 via-[#FFD700]/10 to-[#FFD700]/0 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
-                          )}
-                        </motion.button>
+                          <span>{time}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
