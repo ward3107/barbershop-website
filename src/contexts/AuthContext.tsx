@@ -7,8 +7,6 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  FacebookAuthProvider,
-  OAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -31,9 +29,6 @@ interface AuthContextType {
   signup: (email: string, password: string, displayName: string, phone?: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginWithFacebook: () => Promise<void>;
-  loginWithApple: () => Promise<void>;
-  loginWithMicrosoft: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
@@ -84,29 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Google Login
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
-    await loginWithProvider(provider);
-  }
 
-  // Facebook Login
-  async function loginWithFacebook() {
-    const provider = new FacebookAuthProvider();
-    await loginWithProvider(provider);
-  }
-
-  // Apple Login
-  async function loginWithApple() {
-    const provider = new OAuthProvider('apple.com');
-    await loginWithProvider(provider);
-  }
-
-  // Microsoft Login
-  async function loginWithMicrosoft() {
-    const provider = new OAuthProvider('microsoft.com');
-    await loginWithProvider(provider);
-  }
-
-  // Generic OAuth provider login
-  async function loginWithProvider(provider: GoogleAuthProvider | FacebookAuthProvider | OAuthProvider) {
     const userCredential = await signInWithPopup(auth, provider);
     const user = userCredential.user;
 
@@ -177,9 +150,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signup,
     login,
     loginWithGoogle,
-    loginWithFacebook,
-    loginWithApple,
-    loginWithMicrosoft,
     logout,
     updateUserProfile
   };
