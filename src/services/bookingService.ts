@@ -205,7 +205,24 @@ export async function awardLoyaltyPoints(userId: string, points: number = 10): P
 }
 
 /**
- * Delete a booking (permanently remove from database)
+ * Cancel a booking (customer-initiated cancellation)
+ */
+export async function cancelBooking(bookingId: string): Promise<void> {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      status: 'rejected',
+      cancelledAt: serverTimestamp(),
+      cancelledBy: 'customer'
+    });
+  } catch (error) {
+    console.error('Error cancelling booking:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a booking (permanently remove from database - admin only)
  */
 export async function deleteBooking(bookingId: string): Promise<void> {
   try {
@@ -213,6 +230,28 @@ export async function deleteBooking(bookingId: string): Promise<void> {
     await deleteDoc(bookingRef);
   } catch (error) {
     console.error('Error deleting booking:', error);
+    throw error;
+  }
+}
+
+/**
+ * Reschedule a booking to a new date/time
+ */
+export async function rescheduleBooking(
+  bookingId: string,
+  newDate: Date,
+  newTime: string
+): Promise<void> {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      date: newDate,
+      time: newTime,
+      rescheduledAt: serverTimestamp(),
+      status: 'pending' // Reset to pending when rescheduled
+    });
+  } catch (error) {
+    console.error('Error rescheduling booking:', error);
     throw error;
   }
 }

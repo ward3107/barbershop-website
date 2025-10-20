@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, User, Calendar, Award, LogOut, Clock, CheckCircle, XCircle, Star } from 'lucide-react';
+import { X, User, Calendar, Award, LogOut, Clock, CheckCircle, XCircle, Star, Ban } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/services/firebase';
+import { cancelBooking } from '@/services/bookingService';
 
 interface UserAccountProps {
   open: boolean;
@@ -48,6 +49,10 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       approved: 'Approved',
       rejected: 'Rejected',
       rebook: 'Rebook',
+      cancel: 'Cancel',
+      reschedule: 'Reschedule',
+      cancelConfirm: 'Are you sure you want to cancel this appointment?',
+      cancelSuccess: 'Appointment cancelled successfully',
       pointsInfo: 'Earn 10 points for every completed appointment!',
       rewardsAvailable: 'Available Rewards',
       pointsNeeded: 'points needed',
@@ -71,6 +76,10 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       approved: 'موافق عليه',
       rejected: 'مرفوض',
       rebook: 'إعادة الحجز',
+      cancel: 'إلغاء',
+      reschedule: 'إعادة الجدولة',
+      cancelConfirm: 'هل أنت متأكد من إلغاء هذا الموعد؟',
+      cancelSuccess: 'تم إلغاء الموعد بنجاح',
       pointsInfo: 'احصل على 10 نقاط مقابل كل موعد مكتمل!',
       rewardsAvailable: 'المكافآت المتاحة',
       pointsNeeded: 'نقاط مطلوبة',
@@ -94,6 +103,10 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       approved: 'אושר',
       rejected: 'נדחה',
       rebook: 'הזמן שוב',
+      cancel: 'בטל',
+      reschedule: 'שנה מועד',
+      cancelConfirm: 'האם אתה בטוח שברצונך לבטל את התור הזה?',
+      cancelSuccess: 'התור בוטל בהצלחה',
       pointsInfo: 'הרווח 10 נקודות עבור כל תור שהושלם!',
       rewardsAvailable: 'תגמולים זמינים',
       pointsNeeded: 'נקודות נדרשות',
@@ -148,6 +161,19 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
   const handleLogout = async () => {
     await logout();
     onOpenChange(false);
+  };
+
+  const handleCancel = async (bookingId: string) => {
+    if (!confirm(text.cancelConfirm)) return;
+
+    try {
+      await cancelBooking(bookingId);
+      alert(text.cancelSuccess);
+      loadBookings(); // Reload to show updated status
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Failed to cancel booking');
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -341,16 +367,29 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
                           </p>
                         </div>
                       </div>
-                      {booking.status === 'approved' && onRebook && (
-                        <motion.button
-                          onClick={() => onRebook(booking)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] rounded-lg hover:bg-[#FFD700]/30 transition-all text-sm"
-                        >
-                          {text.rebook}
-                        </motion.button>
-                      )}
+                      <div className="flex gap-2 flex-wrap">
+                        {booking.status === 'approved' && onRebook && (
+                          <motion.button
+                            onClick={() => onRebook(booking)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-4 py-2 bg-[#FFD700]/20 border border-[#FFD700]/50 text-[#FFD700] rounded-lg hover:bg-[#FFD700]/30 transition-all text-sm"
+                          >
+                            {text.rebook}
+                          </motion.button>
+                        )}
+                        {(booking.status === 'pending' || booking.status === 'approved') && (
+                          <motion.button
+                            onClick={() => handleCancel(booking.id)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-4 py-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm flex items-center gap-2"
+                          >
+                            <Ban className="w-4 h-4" />
+                            {text.cancel}
+                          </motion.button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
