@@ -12,6 +12,9 @@ const translations = {
   ar: {
     home: 'الرئيسية',
     gallery: 'معرض الصور',
+    reviews: 'اكتب تقييماً',
+    location: 'احصل على الاتجاهات',
+    callus: 'اتصل بنا',
     makeAppointment: 'احجز موعد',
     vistaBarberShop: 'SHOKHA BARBER SHOP',
     heroTitle1: 'الأفضل',
@@ -49,6 +52,9 @@ const translations = {
   en: {
     home: 'Home',
     gallery: 'Gallery',
+    reviews: 'Write a Review',
+    location: 'Get Directions',
+    callus: 'Call Us',
     makeAppointment: 'Make An Appointment',
     vistaBarberShop: 'Kfar Yassif Barber Shop',
     heroTitle1: 'The Best',
@@ -86,6 +92,9 @@ const translations = {
   he: {
     home: 'בית',
     gallery: 'גלריה',
+    reviews: 'כתוב ביקורת',
+    location: 'קבל הוראות הגעה',
+    callus: 'התקשר אלינו',
     makeAppointment: 'קבע תור',
     vistaBarberShop: 'SHOKHA BARBER SHOP',
     heroTitle1: 'הטוב',

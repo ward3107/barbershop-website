@@ -1,4 +1,5 @@
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 import LandingPage from './components/LandingPage';
 import AdminPage from './components/AdminPage';
 
@@ -8,7 +9,9 @@ function App() {
 
   return (
     <LanguageProvider>
-      {isAdminPage ? <AdminPage /> : <LandingPage />}
+      <AuthProvider>
+        {isAdminPage ? <AdminPage /> : <LandingPage />}
+      </AuthProvider>
     </LanguageProvider>
   );
 }

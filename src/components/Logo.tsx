@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Scissors, Home, Image, ChevronDown } from 'lucide-react';
+import { Scissors, Home, Image, ChevronDown, MessageSquare, Navigation, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -11,6 +11,9 @@ export default function Logo() {
   const menuItems = [
     { key: 'home', href: '#home', icon: Home },
     { key: 'gallery', href: '#gallery', icon: Image },
+    { key: 'reviews', href: '#reviews', icon: MessageSquare },
+    { key: 'location', href: '#location', icon: Navigation },
+    { key: 'callus', href: 'tel:0527412003', icon: Phone, external: true },
   ];
 
   // Close dropdown when clicking outside

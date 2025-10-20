@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import Logo from './Logo';
 import LanguageSwitcher from './LanguageSwitcher';
+import UserMenu from './UserMenu';
 
 export default function Navigation() {
   return (
@@ -12,7 +13,10 @@ export default function Navigation() {
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Logo />
-        <LanguageSwitcher />
+        <div className="flex items-center gap-4">
+          <UserMenu />
+          <LanguageSwitcher />
+        </div>
       </div>
     </motion.nav>
   );

@@ -4,6 +4,9 @@ import Navigation from './Navigation';
 import AppointmentModal from './AppointmentModal';
 import HomeSection from './HomeSection';
 import GallerySection from './GallerySection';
+import ReviewsSection from './ReviewsSection';
+import LocationSection from './LocationSection';
+import ContactFooter from './ContactFooter';
 import ScrollToTop from './ScrollToTop';
 import CookieConsent from './CookieConsent';
 import AccessibilityMenu from './AccessibilityMenu';
@@ -296,20 +299,14 @@ export default function LandingPage() {
       {/* Additional Sections */}
       <HomeSection />
       <GallerySection />
+      <ReviewsSection />
+      <LocationSection />
+      <ContactFooter />
 
       <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
       <ScrollToTop />
       <CookieConsent />
       <AccessibilityMenu />
-
-      {/* Hidden Admin Access - Small link in bottom right */}
-      <a
-        href="#admin"
-        className="fixed bottom-4 right-24 text-xs text-gray-400 hover:text-[#FFD700] transition-colors z-50 bg-black/50 px-2 py-1 rounded"
-        title="Admin Access"
-      >
-        🔒 Admin
-      </a>
 
       {/* Animations for vivid background */}
       <style>{`

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { createBooking } from './BookingSystem';
 import { sendBookingToMake } from '@/services/makeWebhook';
 
@@ -60,23 +61,32 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const { t, language } = useLanguage();
+  const { currentUser, userProfile } = useAuth();
 
-  // Load saved customer info when modal opens
+  // Load customer info from logged-in user or localStorage when modal opens
   useEffect(() => {
     if (open) {
-      const savedInfo = localStorage.getItem('shokha_customer_info');
-      if (savedInfo) {
-        try {
-          const { name, phone, email } = JSON.parse(savedInfo);
-          setCustomerName(name || '');
-          setCustomerPhone(phone || '');
-          setCustomerEmail(email || '');
-        } catch (error) {
-          console.error('Error loading saved customer info:', error);
+      // If user is logged in, use their profile information
+      if (currentUser && userProfile) {
+        setCustomerName(userProfile.displayName || '');
+        setCustomerEmail(userProfile.email || currentUser.email || '');
+        setCustomerPhone(userProfile.phone || '');
+      } else {
+        // Otherwise, try to load from localStorage (for guest users)
+        const savedInfo = localStorage.getItem('shokha_customer_info');
+        if (savedInfo) {
+          try {
+            const { name, phone, email } = JSON.parse(savedInfo);
+            setCustomerName(name || '');
+            setCustomerPhone(phone || '');
+            setCustomerEmail(email || '');
+          } catch (error) {
+            console.error('Error loading saved customer info:', error);
+          }
         }
       }
     }
-  }, [open]);
+  }, [open, currentUser, userProfile]);
 
   // Load booked time slots for the selected date
   useEffect(() => {
@@ -461,7 +471,9 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 )}
               </div>
               <p className="text-gray-400 text-center mb-8">
-                {customerName
+                {currentUser
+                  ? (language === 'ar' ? '✓ تم تحميل معلوماتك من حسابك' : language === 'he' ? '✓ המידע שלך נטען מהחשבון' : '✓ Your info loaded from account')
+                  : customerName
                   ? (language === 'ar' ? '✓ تم تحميل معلوماتك المحفوظة' : language === 'he' ? '✓ המידע שלך נטען' : '✓ Your saved info loaded')
                   : (language === 'ar' ? 'أدخل معلوماتك لتأكيد الحجز' : language === 'he' ? 'הזן את פרטיך לאישור ההזמנה' : 'Enter your details to confirm booking')
                 }
@@ -497,6 +509,11 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   <div className="relative group">
                     <label className="block text-[#FFD700] text-sm font-semibold mb-2">
                       {language === 'ar' ? 'الاسم الكامل *' : language === 'he' ? 'שם מלא *' : 'Full Name *'}
+                      {currentUser && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({language === 'ar' ? 'من حسابك' : language === 'he' ? 'מהחשבון שלך' : 'from your account'})
+                        </span>
+                      )}
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
@@ -504,7 +521,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                         type="text"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        disabled={!!currentUser}
+                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300 ${currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
                         placeholder={language === 'ar' ? 'أدخل اسمك الكامل' : language === 'he' ? 'הזן את שמך המלא' : 'Enter your full name'}
                         required
                       />
@@ -512,19 +530,29 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   </div>
 
                   {/* Phone Field */}
-                  <div className="relative group">
+                  <div className={`relative group ${currentUser && !customerPhone ? 'animate-pulse-glow' : ''}`}>
                     <label className="block text-[#FFD700] text-sm font-semibold mb-2">
                       {language === 'ar' ? 'رقم الهاتف *' : language === 'he' ? 'מספר טלפון *' : 'Phone Number *'}
+                      {currentUser && !customerPhone && (
+                        <span className="text-xs text-[#FFD700] ml-2 animate-pulse">
+                          ({language === 'ar' ? 'املأ هذا الحقل' : language === 'he' ? 'מלא שדה זה' : 'Fill this field'})
+                        </span>
+                      )}
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
+                      <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentUser && !customerPhone ? 'text-[#FFD700] animate-pulse' : 'text-[#C4A572]'}`} />
                       <input
                         type="tel"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300 ${
+                          currentUser && !customerPhone
+                            ? 'border-[#FFD700] ring-2 ring-[#FFD700]/50 shadow-lg shadow-[#FFD700]/30'
+                            : 'border-[#FFD700]/30'
+                        }`}
                         placeholder={language === 'ar' ? 'أدخل رقم هاتفك' : language === 'he' ? 'הזן מספר טלפון' : 'Enter your phone number'}
                         required
+                        autoFocus={currentUser && !customerPhone}
                       />
                     </div>
                   </div>
@@ -533,6 +561,11 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   <div className="relative group">
                     <label className="block text-[#FFD700] text-sm font-semibold mb-2">
                       {language === 'ar' ? 'البريد الإلكتروني (اختياري)' : language === 'he' ? 'דואר אלקטרוני (אופציונלי)' : 'Email (Optional)'}
+                      {currentUser && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({language === 'ar' ? 'من حسابك' : language === 'he' ? 'מהחשבון שלך' : 'from your account'})
+                        </span>
+                      )}
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
@@ -540,7 +573,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                         type="email"
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300"
+                        disabled={!!currentUser}
+                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300 ${currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
                         placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : language === 'he' ? 'הזן כתובת דואר אלקטרוני' : 'Enter your email'}
                       />
                     </div>
