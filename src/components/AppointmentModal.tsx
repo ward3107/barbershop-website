@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Scissors, Crown, Clock, Calendar as CalendarIcon,
-  Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle
+  Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle, XCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -58,6 +58,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const [customerPhone, setCustomerPhone] = useState<string>('');
   const [customerEmail, setCustomerEmail] = useState<string>('');
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const { t, language } = useLanguage();
 
   // Load saved customer info when modal opens
@@ -76,6 +77,34 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
       }
     }
   }, [open]);
+
+  // Load booked time slots for the selected date
+  useEffect(() => {
+    if (date) {
+      const stored = localStorage.getItem('shokha_bookings');
+      if (stored) {
+        try {
+          const bookings = JSON.parse(stored);
+          const selectedDateStr = date.toDateString();
+
+          // Find all bookings for the selected date that are not rejected
+          const bookedTimes = bookings
+            .filter((booking: any) => {
+              const bookingDate = new Date(booking.date);
+              return bookingDate.toDateString() === selectedDateStr &&
+                     booking.status !== 'rejected';
+            })
+            .map((booking: any) => booking.time);
+
+          setBookedSlots(bookedTimes);
+        } catch (error) {
+          console.error('Error loading booked slots:', error);
+        }
+      } else {
+        setBookedSlots([]);
+      }
+    }
+  }, [date]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -343,28 +372,41 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       <h3 className="text-base md:text-lg font-semibold text-[#FFD700]">{t('selectTime')}</h3>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {timeSlots.map((time) => (
-                        <button
-                          key={time}
-                          onClick={() => setSelectedTime(time)}
-                          className={`
-                            relative px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-colors duration-200
-                            ${selectedTime === time
-                              ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black'
-                              : 'bg-zinc-900 border border-[#FFD700]/30 text-gray-300 hover:border-[#FFD700]/60 hover:text-[#FFD700]'
-                            }
-                          `}
-                        >
-                          {selectedTime === time && (
-                            <div className="absolute -top-1 -right-1">
-                              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" />
+                      {timeSlots.map((time) => {
+                        const isBooked = bookedSlots.includes(time);
+                        return (
+                          <button
+                            key={time}
+                            onClick={() => !isBooked && setSelectedTime(time)}
+                            disabled={isBooked}
+                            className={`
+                              relative px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-colors duration-200
+                              ${isBooked
+                                ? 'bg-red-900/30 border border-red-500/50 text-red-400 cursor-not-allowed opacity-60'
+                                : selectedTime === time
+                                ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black'
+                                : 'bg-zinc-900 border border-[#FFD700]/30 text-gray-300 hover:border-[#FFD700]/60 hover:text-[#FFD700]'
+                              }
+                            `}
+                          >
+                            {selectedTime === time && !isBooked && (
+                              <div className="absolute -top-1 -right-1">
+                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <span>{time}</span>
-                        </button>
-                      ))}
+                            )}
+                            {isBooked && (
+                              <div className="absolute -top-1 -right-1">
+                                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                  <XCircle className="w-3 h-3 text-white" />
+                                </div>
+                              </div>
+                            )}
+                            <span>{time}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
