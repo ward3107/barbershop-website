@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   getDocs,
   query,
@@ -21,7 +22,7 @@ export interface Booking {
   service: string;
   date: Date;
   time: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
   createdAt: Date | any;
   notes?: string;
 }
@@ -156,15 +157,32 @@ export async function getBookedSlotsForDate(date: Date): Promise<string[]> {
 }
 
 /**
- * Update booking status (approve/reject)
+ * Update booking status (approve/reject/completed)
  */
 export async function updateBookingStatus(
   bookingId: string,
-  status: 'approved' | 'rejected'
+  status: 'approved' | 'rejected' | 'completed'
 ): Promise<void> {
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
+
+    // First, get the booking data to check for userId
+    const bookingSnapshot = await getDocs(query(collection(db, 'bookings')));
+    let bookingData: any = null;
+
+    bookingSnapshot.forEach((docSnap) => {
+      if (docSnap.id === bookingId) {
+        bookingData = docSnap.data();
+      }
+    });
+
+    // Update the status
     await updateDoc(bookingRef, { status });
+
+    // If marking as completed, award loyalty points to the user
+    if (status === 'completed' && bookingData && bookingData.userId) {
+      await awardLoyaltyPoints(bookingData.userId);
+    }
   } catch (error) {
     console.error('Error updating booking status:', error);
     throw error;
@@ -187,12 +205,12 @@ export async function awardLoyaltyPoints(userId: string, points: number = 10): P
 }
 
 /**
- * Delete a booking
+ * Delete a booking (permanently remove from database)
  */
 export async function deleteBooking(bookingId: string): Promise<void> {
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
-    await updateDoc(bookingRef, { status: 'rejected' });
+    await deleteDoc(bookingRef);
   } catch (error) {
     console.error('Error deleting booking:', error);
     throw error;

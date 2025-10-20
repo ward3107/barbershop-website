@@ -2,14 +2,17 @@
 // Sends booking data to Make.com for WhatsApp automation
 
 interface Booking {
-  id: string;
+  id?: string;
+  userId?: string;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
   service: string;
   date: Date;
   time: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  createdAt?: Date | any;
+  notes?: string;
 }
 
 // Make.com Webhook URL - You'll get this from Make.com after creating scenario

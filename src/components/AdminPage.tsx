@@ -3,17 +3,8 @@ import { Lock, LogOut, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { motion } from 'framer-motion';
 import NotificationManager from './NotificationManager';
 import WhatsAppQuickSender from './WhatsAppQuickSender';
-
-interface Booking {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
+import { getAllBookings, updateBookingStatus, deleteBooking as deleteBookingFromDB, type Booking } from '@/services/bookingService';
+import { sendApprovalToMake, sendRejectionToMake } from '@/services/makeWebhook';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,14 +32,19 @@ export default function AdminPage() {
     }
   }, [isAuthenticated]);
 
-  const loadBookings = () => {
-    const stored = localStorage.getItem('shokha_bookings');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setBookings(parsed.map((b: any) => ({
-        ...b,
-        date: new Date(b.date)
-      })));
+  const loadBookings = async () => {
+    try {
+      const allBookings = await getAllBookings();
+      // Sort by date and time, newest first
+      const sorted = allBookings.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        if (dateA !== dateB) return dateB - dateA;
+        return b.time.localeCompare(a.time);
+      });
+      setBookings(sorted);
+    } catch (error) {
+      console.error('Error loading bookings:', error);
     }
   };
 
@@ -70,11 +66,59 @@ export default function AdminPage() {
     setPassword('');
   };
 
-  const deleteBooking = (id: string) => {
+  const handleApprove = async (booking: Booking) => {
+    if (!booking.id) return;
+    try {
+      await updateBookingStatus(booking.id, 'approved');
+      await sendApprovalToMake(booking);
+      alert(`✅ Booking approved! WhatsApp confirmation sent to ${booking.customerPhone}`);
+      loadBookings();
+    } catch (error) {
+      console.error('Error approving booking:', error);
+      alert('Error approving booking');
+    }
+  };
+
+  const handleReject = async (booking: Booking) => {
+    if (!booking.id) return;
+    if (confirm(`Are you sure you want to reject ${booking.customerName}'s booking?`)) {
+      try {
+        await updateBookingStatus(booking.id, 'rejected');
+        await sendRejectionToMake(booking);
+        alert(`❌ Booking rejected. WhatsApp notification sent to ${booking.customerPhone}`);
+        loadBookings();
+      } catch (error) {
+        console.error('Error rejecting booking:', error);
+        alert('Error rejecting booking');
+      }
+    }
+  };
+
+  const handleComplete = async (booking: Booking) => {
+    if (!booking.id) return;
+    if (confirm(`Mark ${booking.customerName}'s appointment as completed?`)) {
+      try {
+        await updateBookingStatus(booking.id, 'completed');
+        alert(`✅ Appointment marked as completed! Loyalty points awarded.`);
+        loadBookings();
+      } catch (error) {
+        console.error('Error completing booking:', error);
+        alert('Error completing booking');
+      }
+    }
+  };
+
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
     if (confirm('Are you sure you want to delete this booking?')) {
-      const updated = bookings.filter(b => b.id !== id);
-      localStorage.setItem('shokha_bookings', JSON.stringify(updated));
-      setBookings(updated);
+      try {
+        await deleteBookingFromDB(id);
+        alert('Booking deleted');
+        loadBookings();
+      } catch (error) {
+        console.error('Error deleting booking:', error);
+        alert('Error deleting booking');
+      }
     }
   };
 
@@ -86,6 +130,8 @@ export default function AdminPage() {
         return <span className="flex items-center gap-1 text-green-500"><CheckCircle className="w-4 h-4" /> Approved</span>;
       case 'rejected':
         return <span className="flex items-center gap-1 text-red-500"><XCircle className="w-4 h-4" /> Rejected</span>;
+      case 'completed':
+        return <span className="flex items-center gap-1 text-blue-500"><CheckCircle className="w-4 h-4" /> Completed</span>;
       default:
         return status;
     }
@@ -212,12 +258,42 @@ export default function AdminPage() {
                     </td>
                     <td className="px-4 py-3">{getStatusBadge(booking.status)}</td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteBooking(booking.id)}
-                        className="text-red-500 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {booking.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(booking)}
+                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-semibold"
+                              title="Approve booking"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleReject(booking)}
+                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-semibold"
+                              title="Reject booking"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {booking.status === 'approved' && (
+                          <button
+                            onClick={() => handleComplete(booking)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-semibold"
+                            title="Mark as completed"
+                          >
+                            Complete
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(booking.id)}
+                          className="text-red-500 hover:text-red-400 transition-colors"
+                          title="Delete booking"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
