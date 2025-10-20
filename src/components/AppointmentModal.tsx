@@ -552,7 +552,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                         }`}
                         placeholder={language === 'ar' ? 'أدخل رقم هاتفك' : language === 'he' ? 'הזן מספר טלפון' : 'Enter your phone number'}
                         required
-                        autoFocus={currentUser && !customerPhone}
+                        autoFocus={!!(currentUser && !customerPhone)}
                       />
                     </div>
                   </div>
