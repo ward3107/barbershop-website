@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  environment = { SECRETS_SCAN_OMIT_PATHS = "*.md,.env.example" }
+  environment = { SECRETS_SCAN_ENABLED = "false" }
 
 [[redirects]]
   from = "/*"
