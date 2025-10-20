@@ -251,6 +251,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
                     placeholder={text.password}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
                     required
                     minLength={6}
                   />
