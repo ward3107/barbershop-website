@@ -159,8 +159,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full p-8 relative overflow-hidden"
         >
           {/* Background Effects */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)] pointer-events-none" />
 
           {/* Close Button */}
           <button

@@ -216,8 +216,8 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
         className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative"
       >
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)] pointer-events-none" />
 
         {/* Header */}
         <div className="border-b border-[#FFD700]/30 p-6 relative z-10">
