@@ -156,7 +156,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 relative"
+          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 relative mt-16"
         >
           {/* Background Effects */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
