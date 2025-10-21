@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import EnhancedCalendar from './EnhancedCalendar';
 import {
   Scissors, Crown, Clock, Calendar as CalendarIcon,
-  Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle, XCircle
+  Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle, XCircle, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -68,6 +68,24 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const { t, language } = useLanguage();
   const { currentUser, userProfile } = useAuth();
   const toast = useToast();
+
+  // Handle browser back button
+  useEffect(() => {
+    if (open) {
+      // Push a new state when modal opens
+      window.history.pushState({ modal: 'appointment' }, '');
+
+      const handlePopState = () => {
+        onOpenChange(false);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [open, onOpenChange]);
 
   // Load customer info from logged-in user or localStorage when modal opens
   useEffect(() => {
@@ -268,6 +286,14 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
 
         {/* Header with crown animation */}
         <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-4 md:p-6">
+          {/* Close button - visible on mobile */}
+          <button
+            onClick={() => handleClose(false)}
+            className="absolute top-2 right-2 md:hidden z-50 w-8 h-8 rounded-full bg-black/80 border border-[#FFD700]/50 flex items-center justify-center text-white hover:bg-[#FFD700] hover:text-black transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           <AnimatePresence>
             {open && (
               <motion.div

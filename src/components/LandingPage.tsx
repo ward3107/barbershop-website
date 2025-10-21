@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navigation from './Navigation';
 import AppointmentModal from './AppointmentModal';
@@ -20,6 +20,54 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export default function LandingPage() {
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const { } = useLanguage();
+
+  // Handle back button for scrolling
+  useEffect(() => {
+    // Initialize with a base state
+    window.history.replaceState({ page: 'landing' }, '');
+
+    let isScrolledDown = false;
+
+    const handleScroll = () => {
+      const currentScrollPosition = window.scrollY;
+
+      // If user scrolled down past 300px
+      if (currentScrollPosition > 300 && !isScrolledDown) {
+        // Push a scroll state
+        window.history.pushState({ page: 'landing', scrolled: true }, '');
+        isScrolledDown = true;
+      }
+      // If user scrolled back to top manually, reset the flag
+      else if (currentScrollPosition <= 100 && isScrolledDown) {
+        isScrolledDown = false;
+      }
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      const currentScrollPosition = window.scrollY;
+
+      // If we're scrolled down when back is pressed
+      if (currentScrollPosition > 100) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // After scrolling completes, re-push state and reset flag
+        setTimeout(() => {
+          isScrolledDown = false;
+          // Push a new state so the next scroll down will work
+          window.history.pushState({ page: 'landing' }, '');
+        }, 500);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   return (
     <div>
@@ -66,11 +114,11 @@ export default function LandingPage() {
             }}
           />
 
-          {/* Floating golden particles */}
+          {/* Floating golden particles - Hidden on mobile for performance */}
           {Array.from({ length: 20 }).map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 bg-[#FFD700]/20 rounded-full"
+              className="absolute w-1 h-1 bg-[#FFD700]/20 rounded-full hidden md:block"
               initial={{
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight,
@@ -95,10 +143,10 @@ export default function LandingPage() {
         <div className="relative z-10">
           <Navigation />
 
-          <main className="container mx-auto px-4 pt-32 pb-16 min-h-screen flex items-center justify-center">
+          <main className="container mx-auto px-4 pt-20 md:pt-32 pb-16 min-h-screen flex items-start md:items-center justify-center">
             <div className="max-w-6xl w-full flex flex-col items-center text-center px-2">
               {/* Shop Name - Two Words with Individual Vivid Backgrounds */}
-              <div className="relative mb-8 w-full flex flex-col items-center gap-2 md:gap-4">
+              <div className="relative mb-8 w-full flex flex-col items-center gap-1 md:gap-4">
 
                 {/* SHOKHA - First Word */}
                 <div className="relative inline-block">
@@ -163,21 +211,15 @@ export default function LandingPage() {
                     {'SHOKHA'.split('').map((letter, index) => (
                       <motion.span
                         key={`shokha-${index}`}
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{
-                          opacity: 1,
-                          y: [100, -20, 0],
-                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         transition={{
-                          duration: 0.5,
-                          delay: index * 0.05,
-                          type: 'spring',
-                          stiffness: 120,
-                          damping: 10
+                          duration: 0.3,
+                          delay: index * 0.03,
                         }}
+                        className="inline-block md:animate-wave"
                         style={{
-                          display: 'inline-block',
-                          animation: `wave 2s ease-in-out ${index * 0.05}s infinite`
+                          animationDelay: `${index * 0.05}s`
                         }}
                       >
                         {letter}
@@ -251,21 +293,15 @@ export default function LandingPage() {
                     {'BARBERSHOP'.split('').map((letter, index) => (
                       <motion.span
                         key={`barbershop-${index}`}
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{
-                          opacity: 1,
-                          y: [100, -20, 0],
-                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         transition={{
-                          duration: 0.5,
-                          delay: 0.3 + (index * 0.05),
-                          type: 'spring',
-                          stiffness: 120,
-                          damping: 10
+                          duration: 0.3,
+                          delay: 0.2 + (index * 0.03),
                         }}
+                        className="inline-block md:animate-wave"
                         style={{
-                          display: 'inline-block',
-                          animation: `wave 2s ease-in-out ${0.3 + (index * 0.05)}s infinite`
+                          animationDelay: `${0.3 + (index * 0.05)}s`
                         }}
                       >
                         {letter}

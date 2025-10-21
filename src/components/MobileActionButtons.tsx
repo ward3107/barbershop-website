@@ -55,7 +55,7 @@ export default function MobileActionButtons() {
   ];
 
   return (
-    <div className="fixed bottom-20 right-4 z-[9998] md:hidden">
+    <div className="fixed bottom-32 left-4 z-[9998] md:hidden">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -128,19 +128,6 @@ export default function MobileActionButtons() {
           <div className="absolute inset-0 rounded-full bg-[#FFD700] animate-ping opacity-20" />
         )}
       </motion.button>
-
-      {/* Hint tooltip */}
-      {!isOpen && (
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1 }}
-          className="absolute bottom-0 right-16 bg-black/90 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap pointer-events-none"
-        >
-          {language === 'ar' ? 'اتصل بنا' : language === 'he' ? 'צור קשר' : 'Contact us'}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-4 border-l-black/90" />
-        </motion.div>
-      )}
     </div>
   );
 }

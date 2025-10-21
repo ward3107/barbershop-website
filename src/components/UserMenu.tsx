@@ -24,15 +24,20 @@ export default function UserMenu() {
         onClick={handleClick}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="relative group bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
+        className="relative group bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all text-sm md:text-base"
       >
         {currentUser ? (
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            <span>{userProfile?.displayName || 'Account'}</span>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <User className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">{userProfile?.displayName || 'Account'}</span>
           </div>
         ) : (
-          'Login / Sign Up'
+          <span className="hidden sm:inline">Login / Sign Up</span>
+        )}
+
+        {/* Mobile: Show only icon for login */}
+        {!currentUser && (
+          <User className="w-4 h-4 sm:hidden" />
         )}
 
         {/* Tooltip for logged in user */}

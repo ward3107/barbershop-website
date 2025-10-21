@@ -22,12 +22,13 @@ export default function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="bg-transparent border-[#C4A572] text-white hover:bg-[#C4A572] hover:text-black">
-          <Languages className="h-4 w-4 mr-2" />
-          {currentLang?.flag} {currentLang?.name}
+        <Button variant="outline" size="sm" className="bg-transparent border-[#C4A572] text-white hover:bg-[#C4A572] hover:text-black px-2 md:px-3">
+          <Languages className="h-4 w-4 md:mr-2" />
+          <span className="hidden sm:inline ml-1">{currentLang?.flag} {currentLang?.name}</span>
+          <span className="sm:hidden ml-1">{currentLang?.flag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-black border-[#C4A572]">
+      <DropdownMenuContent align="end" className="bg-black border-[#C4A572]">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}

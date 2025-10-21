@@ -116,6 +116,24 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
 
   const text = texts[language as keyof typeof texts];
 
+  // Handle browser back button
+  useEffect(() => {
+    if (open) {
+      // Push a new state when modal opens
+      window.history.pushState({ modal: 'account' }, '');
+
+      const handlePopState = () => {
+        onOpenChange(false);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [open, onOpenChange]);
+
   // Load user bookings
   useEffect(() => {
     if (open && currentUser) {
@@ -205,7 +223,7 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pt-[400px]"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 pt-16 md:pt-4"
       onClick={() => onOpenChange(false)}
     >
       <motion.div
@@ -213,52 +231,52 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto relative my-8"
+        className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
       >
         {/* Background Effects */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)] pointer-events-none" />
 
         {/* Header */}
-        <div className="border-b border-[#FFD700]/30 p-6 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#C4A572] rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-black" />
+        <div className="border-b border-[#FFD700]/30 p-3 md:p-6 relative z-10">
+          <div className="flex items-center justify-between mb-3 md:mb-0">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-[#FFD700] to-[#C4A572] rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 md:w-6 md:h-6 text-black" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#FFD700]">
-                  {language === 'ar' ? 'مرحباً بعودتك' : language === 'he' ? 'ברוך שובך' : 'Welcome back'}, {userProfile.displayName}!
+                <h2 className="text-base md:text-2xl font-bold text-[#FFD700]">
+                  {language === 'ar' ? 'مرحباً' : language === 'he' ? 'שלום' : 'Hi'}, {userProfile.displayName}!
                 </h2>
-                <p className="text-gray-400 text-sm">{userProfile.email}</p>
+                <p className="text-gray-400 text-xs md:text-sm hidden md:block">{userProfile.email}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <motion.button
                 onClick={handleLogout}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition-all"
+                className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-xs md:text-base"
               >
-                <LogOut className="w-4 h-4" />
-                {text.logout}
+                <LogOut className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline">{text.logout}</span>
               </motion.button>
               <button
                 onClick={() => onOpenChange(false)}
                 className="text-gray-400 hover:text-[#FFD700] transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mt-6">
+          <div className="flex gap-1 md:gap-2 mt-3 md:mt-6">
             {(['profile', 'bookings', 'rewards'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                className={`px-3 md:px-6 py-1.5 md:py-2 rounded-lg font-medium transition-all text-xs md:text-base ${
                   activeTab === tab
                     ? 'bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black'
                     : 'bg-black/50 text-gray-400 hover:text-[#FFD700]'
@@ -271,11 +289,11 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] relative z-10">
+        <div className="p-3 md:p-6 overflow-y-auto max-h-[calc(90vh-200px)] relative z-10">
           {activeTab === 'profile' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-black/50 border border-[#FFD700]/30 rounded-lg p-6">
-                <h3 className="text-[#FFD700] font-bold mb-4">{text.profile}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+              <div className="bg-black/50 border border-[#FFD700]/30 rounded-lg p-3 md:p-6">
+                <h3 className="text-[#FFD700] font-bold mb-3 md:mb-4 text-sm md:text-base">{text.profile}</h3>
                 <div className="space-y-3">
                   <div>
                     <p className="text-gray-400 text-sm">{text.name}</p>
@@ -300,8 +318,8 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
                 </div>
               </div>
 
-              <div className="bg-black/50 border border-[#FFD700]/30 rounded-lg p-6">
-                <h3 className="text-[#FFD700] font-bold mb-4">Stats</h3>
+              <div className="bg-black/50 border border-[#FFD700]/30 rounded-lg p-3 md:p-6">
+                <h3 className="text-[#FFD700] font-bold mb-3 md:mb-4 text-sm md:text-base">Stats</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-[#FFD700]/20 rounded-lg flex items-center justify-center">

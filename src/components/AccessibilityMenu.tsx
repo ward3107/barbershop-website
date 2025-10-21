@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Accessibility, ZoomIn, ZoomOut, Contrast, Type, MousePointer, Focus, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,46 @@ export default function AccessibilityMenu() {
   const [largerCursor, setLargerCursor] = useState(false);
   const [highlightLinks, setHighlightLinks] = useState(false);
   const [pauseAnimations, setPauseAnimations] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { t } = useLanguage();
+
+  // Hide on scroll, show when stopped or at top
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show when at top (within 50px)
+      if (currentScrollY < 50) {
+        setIsVisible(true);
+        clearTimeout(scrollTimeout);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+
+      // Hide when scrolling
+      setIsVisible(false);
+
+      // Clear existing timeout
+      clearTimeout(scrollTimeout);
+
+      // Show after scrolling stops for 500ms
+      scrollTimeout = setTimeout(() => {
+        setIsVisible(true);
+      }, 500);
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [lastScrollY]);
 
   const increaseFontSize = () => {
     const newSize = Math.min(fontSize + 10, 150);
@@ -83,7 +122,9 @@ export default function AccessibilityMenu() {
       <SheetTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-24 left-6 z-50 h-12 w-12 rounded-full bg-[#C4A572] hover:bg-[#D4B582] text-black shadow-lg"
+          className={`fixed bottom-16 left-4 z-50 h-12 w-12 rounded-full bg-[#C4A572] hover:bg-[#D4B582] text-black shadow-lg transition-all duration-300 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          }`}
         >
           <Accessibility className="h-6 w-6" />
         </Button>

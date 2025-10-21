@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -92,6 +92,24 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const text = texts[language as keyof typeof texts];
 
+  // Handle browser back button
+  useEffect(() => {
+    if (open) {
+      // Push a new state when modal opens
+      window.history.pushState({ modal: 'auth' }, '');
+
+      const handlePopState = () => {
+        onOpenChange(false);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [open, onOpenChange]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -154,7 +172,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 pt-[560px]"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-start md:items-center justify-center p-4 pt-20 md:pt-4"
         onClick={() => onOpenChange(false)}
       >
         <motion.div
@@ -162,11 +180,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-8 relative my-8"
+          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-6 md:p-8 relative my-8"
         >
-          {/* Background Effects */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)] pointer-events-none" />
+          {/* Background Effects - Hidden on mobile for performance */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none hidden md:block" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(196,165,114,0.1)_0%,transparent_50%)] pointer-events-none hidden md:block" />
 
           {/* Close Button */}
           <button
@@ -179,14 +197,14 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <div className="relative z-10">
             {/* Welcome Message for Logged In Users */}
             {currentUser && userProfile ? (
-              <div className="text-center py-8">
-                <h2 className="text-3xl font-bold text-[#FFD700] mb-4">
+              <div className="text-center py-4 md:py-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700] mb-3 md:mb-4">
                   {text.welcomeBack}
                 </h2>
-                <p className="text-2xl text-white mb-6">
+                <p className="text-xl md:text-2xl text-white mb-4 md:mb-6">
                   {userProfile.displayName}!
                 </p>
-                <p className="text-gray-400 mb-8">
+                <p className="text-gray-400 mb-6 md:mb-8 text-sm md:text-base">
                   {text.alreadyLoggedIn}
                 </p>
                 <motion.button
