@@ -205,7 +205,7 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20 overflow-y-auto"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pt-[400px]"
       onClick={() => onOpenChange(false)}
     >
       <motion.div
@@ -213,7 +213,7 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative"
+        className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto relative my-8"
       >
         {/* Background Effects */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
@@ -227,8 +227,10 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
                 <User className="w-6 h-6 text-black" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#FFD700]">{text.title}</h2>
-                <p className="text-gray-400 text-sm">{userProfile.displayName}</p>
+                <h2 className="text-2xl font-bold text-[#FFD700]">
+                  {language === 'ar' ? 'مرحباً بعودتك' : language === 'he' ? 'ברוך שובך' : 'Welcome back'}, {userProfile.displayName}!
+                </h2>
+                <p className="text-gray-400 text-sm">{userProfile.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

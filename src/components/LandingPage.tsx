@@ -4,6 +4,7 @@ import Navigation from './Navigation';
 import AppointmentModal from './AppointmentModal';
 import HomeSection from './HomeSection';
 import GallerySection from './GallerySection';
+import VideoGallery from './VideoGallery';
 import ReviewsSection from './ReviewsSection';
 import LocationSection from './LocationSection';
 import ContactFooter from './ContactFooter';
@@ -12,6 +13,8 @@ import CookieConsent from './CookieConsent';
 import AccessibilityMenu from './AccessibilityMenu';
 import LuxuryAnnouncementBar from './LuxuryAnnouncementBar';
 import GalacticAppointmentButton from './GalacticAppointmentButton';
+import PWAInstallPrompt from './PWAInstallPrompt';
+import MobileActionButtons from './MobileActionButtons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LandingPage() {
@@ -299,6 +302,7 @@ export default function LandingPage() {
       {/* Additional Sections */}
       <HomeSection />
       <GallerySection />
+      <VideoGallery />
       <ReviewsSection />
       <LocationSection />
       <ContactFooter />
@@ -307,6 +311,8 @@ export default function LandingPage() {
       <ScrollToTop />
       <CookieConsent />
       <AccessibilityMenu />
+      <PWAInstallPrompt />
+      <MobileActionButtons />
 
       {/* Animations for vivid background */}
       <style>{`

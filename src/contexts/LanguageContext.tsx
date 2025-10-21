@@ -12,6 +12,7 @@ const translations = {
   ar: {
     home: 'الرئيسية',
     gallery: 'معرض الصور',
+    videogallery: 'معرض الفيديو',
     reviews: 'اكتب تقييماً',
     location: 'احصل على الاتجاهات',
     callus: 'اتصل بنا',
@@ -52,6 +53,7 @@ const translations = {
   en: {
     home: 'Home',
     gallery: 'Gallery',
+    videogallery: 'Video Gallery',
     reviews: 'Write a Review',
     location: 'Get Directions',
     callus: 'Call Us',
@@ -92,6 +94,7 @@ const translations = {
   he: {
     home: 'בית',
     gallery: 'גלריה',
+    videogallery: 'גלריית וידאו',
     reviews: 'כתוב ביקורת',
     location: 'קבל הוראות הגעה',
     callus: 'התקשר אלינו',

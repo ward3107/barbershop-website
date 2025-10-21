@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User, Phone, LogIn, UserPlus } from 'lucide-react';
+import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -18,7 +18,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, signup, loginWithGoogle, currentUser, userProfile } = useAuth();
   const { language } = useLanguage();
 
   const texts = {
@@ -40,7 +40,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       errorTitle: 'Error',
       successTitle: 'Success!',
       loginSuccess: 'Welcome back!',
-      signupSuccess: 'Account created successfully!'
+      signupSuccess: 'Account created successfully!',
+      welcomeBack: 'Welcome back,',
+      alreadyLoggedIn: 'You are already logged in!'
     },
     ar: {
       login: 'تسجيل الدخول',
@@ -60,7 +62,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       errorTitle: 'خطأ',
       successTitle: 'نجح!',
       loginSuccess: 'مرحباً بعودتك!',
-      signupSuccess: 'تم إنشاء الحساب بنجاح!'
+      signupSuccess: 'تم إنشاء الحساب بنجاح!',
+      welcomeBack: 'مرحباً بعودتك،',
+      alreadyLoggedIn: 'أنت مسجل دخولك بالفعل!'
     },
     he: {
       login: 'התחברות',
@@ -80,7 +84,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       errorTitle: 'שגיאה',
       successTitle: 'הצלחה!',
       loginSuccess: 'ברוך שובך!',
-      signupSuccess: 'חשבון נוצר בהצלחה!'
+      signupSuccess: 'חשבון נוצר בהצלחה!',
+      welcomeBack: 'ברוך שובך,',
+      alreadyLoggedIn: 'אתה כבר מחובר!'
     }
   };
 
@@ -148,7 +154,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 pt-[560px]"
         onClick={() => onOpenChange(false)}
       >
         <motion.div
@@ -156,7 +162,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 relative mt-16"
+          className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-8 relative my-8"
         >
           {/* Background Effects */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1)_0%,transparent_50%)] pointer-events-none" />
@@ -171,27 +177,38 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </button>
 
           <div className="relative z-10">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', duration: 0.5 }}
-                className="w-16 h-16 bg-gradient-to-r from-[#FFD700] to-[#C4A572] rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                {isLogin ? (
-                  <LogIn className="w-8 h-8 text-black" />
-                ) : (
-                  <UserPlus className="w-8 h-8 text-black" />
-                )}
-              </motion.div>
-              <h2 className="text-3xl font-bold text-[#FFD700] mb-2">
-                {isLogin ? text.login : text.signup}
-              </h2>
-            </div>
+            {/* Welcome Message for Logged In Users */}
+            {currentUser && userProfile ? (
+              <div className="text-center py-8">
+                <h2 className="text-3xl font-bold text-[#FFD700] mb-4">
+                  {text.welcomeBack}
+                </h2>
+                <p className="text-2xl text-white mb-6">
+                  {userProfile.displayName}!
+                </p>
+                <p className="text-gray-400 mb-8">
+                  {text.alreadyLoggedIn}
+                </p>
+                <motion.button
+                  onClick={() => onOpenChange(false)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
+                >
+                  Close
+                </motion.button>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-[#FFD700] mb-2">
+                    {isLogin ? text.login : text.signup}
+                  </h2>
+                </div>
 
-            {/* Error Message */}
-            {error && (
+                {/* Error Message */}
+                {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -338,6 +355,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             >
               {isLogin ? text.switchToSignup : text.switchToLogin}
             </button>
+              </>
+            )}
           </div>
         </motion.div>
       </motion.div>

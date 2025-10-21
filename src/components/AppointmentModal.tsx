@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Calendar } from '@/components/ui/calendar';
+import EnhancedCalendar from './EnhancedCalendar';
 import {
   Scissors, Crown, Clock, Calendar as CalendarIcon,
   Sparkles, ChevronRight, Check, User, Phone, Mail, AlertCircle, XCircle
@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from './Toast';
 import { createBooking } from './BookingSystem';
 import { sendBookingToMake } from '@/services/makeWebhook';
 
@@ -60,8 +61,13 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const [customerEmail, setCustomerEmail] = useState<string>('');
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringType, setRecurringType] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
+  const [recurringCount, setRecurringCount] = useState(4);
   const { t, language } = useLanguage();
   const { currentUser, userProfile } = useAuth();
+  const toast = useToast();
 
   // Load customer info from logged-in user or localStorage when modal opens
   useEffect(() => {
@@ -134,21 +140,51 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
     }
   };
 
+  const generateRecurringDates = (startDate: Date, type: 'weekly' | 'biweekly' | 'monthly', count: number): Date[] => {
+    const dates = [new Date(startDate)];
+
+    for (let i = 1; i < count; i++) {
+      const newDate = new Date(dates[dates.length - 1]);
+
+      if (type === 'weekly') {
+        newDate.setDate(newDate.getDate() + 7);
+      } else if (type === 'biweekly') {
+        newDate.setDate(newDate.getDate() + 14);
+      } else if (type === 'monthly') {
+        newDate.setMonth(newDate.getMonth() + 1);
+      }
+
+      dates.push(newDate);
+    }
+
+    return dates;
+  };
+
   const handleBooking = async () => {
     if (date && selectedTime && selectedService && customerName && customerPhone) {
       const service = services.find(s => s.id === selectedService);
       const serviceName = language === 'ar' ? service?.nameAr : language === 'he' ? service?.nameHe : service?.nameEn;
 
+      setIsSubmitting(true);
       try {
-        // Create booking request
-        const booking = await createBooking(
-          customerName,
-          customerPhone,
-          serviceName || '',
-          date,
-          selectedTime,
-          customerEmail
-        );
+        // Get dates for recurring appointments
+        const dates = isRecurring
+          ? generateRecurringDates(date, recurringType, recurringCount)
+          : [date];
+
+        // Create all bookings
+        const bookings = [];
+        for (const bookingDate of dates) {
+          const booking = await createBooking(
+            customerName,
+            customerPhone,
+            serviceName || '',
+            bookingDate,
+            selectedTime,
+            customerEmail
+          );
+          bookings.push(booking);
+        }
 
         // Save customer info for next time
         localStorage.setItem('shokha_customer_info', JSON.stringify({
@@ -159,19 +195,27 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
 
         // Send to Make.com for automatic WhatsApp (FREE option)
         console.log('📱 Sending booking to Make.com...');
-        await sendBookingToMake(booking);
+        for (const booking of bookings) {
+          await sendBookingToMake(booking);
+        }
 
         // OR use Twilio (paid option - uncomment if using Twilio)
         // await notifyOwnerNewBooking(booking);
 
         // Show confirmation message
-        const confirmMessage = language === 'ar'
-          ? `✅ تم إرسال طلب الحجز بنجاح!\n\nالخدمة: ${serviceName}\nالتاريخ: ${date.toLocaleDateString()}\nالوقت: ${selectedTime}\n\n⏳ في انتظار موافقة الصالون\nستصلك رسالة تأكيد عبر WhatsApp قريباً`
-          : language === 'he'
-          ? `✅ בקשת ההזמנה נשלחה בהצלחה!\n\nשירות: ${serviceName}\nתאריך: ${date.toLocaleDateString()}\nשעה: ${selectedTime}\n\n⏳ ממתין לאישור הספרייה\nתקבל הודעת אישור ב-WhatsApp בקרוב`
-          : `✅ Booking request sent successfully!\n\nService: ${serviceName}\nDate: ${date.toLocaleDateString()}\nTime: ${selectedTime}\n\n⏳ Waiting for salon approval\nYou will receive a WhatsApp confirmation soon`;
+        const confirmMessage = isRecurring
+          ? (language === 'ar'
+            ? `✅ تم إرسال ${recurringCount} مواعيد متكررة بنجاح!\n\nالخدمة: ${serviceName}\nالوقت: ${selectedTime}\nالبدء: ${date.toLocaleDateString()}\n\n⏳ في انتظار موافقة الصالون\nستصلك رسائل تأكيد عبر WhatsApp قريباً`
+            : language === 'he'
+            ? `✅ ${recurringCount} פגישות חוזרות נשלחו בהצלחה!\n\nשירות: ${serviceName}\nשעה: ${selectedTime}\nהתחלה: ${date.toLocaleDateString()}\n\n⏳ ממתין לאישור הספרייה\nתקבל הודעות אישור ב-WhatsApp בקרוב`
+            : `✅ ${recurringCount} recurring appointments sent successfully!\n\nService: ${serviceName}\nTime: ${selectedTime}\nStarting: ${date.toLocaleDateString()}\n\n⏳ Waiting for salon approval\nYou will receive WhatsApp confirmations soon`)
+          : (language === 'ar'
+            ? `✅ تم إرسال طلب الحجز بنجاح!\n\nالخدمة: ${serviceName}\nالتاريخ: ${date.toLocaleDateString()}\nالوقت: ${selectedTime}\n\n⏳ في انتظار موافقة الصالون\nستصلك رسالة تأكيد عبر WhatsApp قريباً`
+            : language === 'he'
+            ? `✅ בקשת ההזמנה נשלחה בהצלחה!\n\nשירות: ${serviceName}\nתאריך: ${date.toLocaleDateString()}\nשעה: ${selectedTime}\n\n⏳ ממתין לאישור הספרייה\nתקבל הודעת אישור ב-WhatsApp בקרוב`
+            : `✅ Booking request sent successfully!\n\nService: ${serviceName}\nDate: ${date.toLocaleDateString()}\nTime: ${selectedTime}\n\n⏳ Waiting for salon approval\nYou will receive a WhatsApp confirmation soon`);
 
-        alert(confirmMessage);
+        toast.success(confirmMessage, 6000);
 
         // Reset and close
         onOpenChange(false);
@@ -183,7 +227,9 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
         setCustomerEmail('');
       } catch (error) {
         console.error('Booking error:', error);
-        alert(language === 'ar' ? 'حدث خطأ. حاول مرة أخرى.' : language === 'he' ? 'אירעה שגיאה. נסה שוב.' : 'An error occurred. Please try again.');
+        toast.error(language === 'ar' ? 'حدث خطأ. حاول مرة أخرى.' : language === 'he' ? 'אירעה שגיאה. נסה שוב.' : 'An error occurred. Please try again.');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -362,7 +408,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       <h3 className="text-base md:text-lg font-semibold text-[#FFD700]">Select Date</h3>
                     </div>
                     <div className="w-full overflow-x-auto">
-                      <Calendar
+                      <EnhancedCalendar
                         mode="single"
                         selected={date}
                         onSelect={setDate}
@@ -419,6 +465,92 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Recurring Appointments */}
+              <div className="mt-8 max-w-3xl mx-auto">
+                <div className="bg-zinc-900 border-2 border-[#FFD700]/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={isRecurring}
+                        onChange={(e) => setIsRecurring(e.target.checked)}
+                        className="w-5 h-5 rounded border-2 border-[#FFD700] bg-black checked:bg-[#FFD700] checked:border-[#FFD700] cursor-pointer"
+                      />
+                      <span className="text-white font-semibold group-hover:text-[#FFD700] transition-colors">
+                        {language === 'ar' ? 'مواعيد متكررة' : language === 'he' ? 'פגישות חוזרות' : 'Recurring Appointments'}
+                      </span>
+                    </label>
+                  </div>
+
+                  {isRecurring && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-4 mt-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Frequency */}
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">
+                            {language === 'ar' ? 'التكرار' : language === 'he' ? 'תדירות' : 'Frequency'}
+                          </label>
+                          <select
+                            value={recurringType}
+                            onChange={(e) => setRecurringType(e.target.value as any)}
+                            className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white focus:outline-none focus:border-[#FFD700]"
+                          >
+                            <option value="weekly">
+                              {language === 'ar' ? 'أسبوعياً' : language === 'he' ? 'שבועי' : 'Weekly'}
+                            </option>
+                            <option value="biweekly">
+                              {language === 'ar' ? 'كل أسبوعين' : language === 'he' ? 'דו-שבועי' : 'Every 2 Weeks'}
+                            </option>
+                            <option value="monthly">
+                              {language === 'ar' ? 'شهرياً' : language === 'he' ? 'חודשי' : 'Monthly'}
+                            </option>
+                          </select>
+                        </div>
+
+                        {/* Number of occurrences */}
+                        <div>
+                          <label className="block text-gray-400 text-sm mb-2">
+                            {language === 'ar' ? 'عدد المواعيد' : language === 'he' ? 'מספר פגישות' : 'Number of Appointments'}
+                          </label>
+                          <select
+                            value={recurringCount}
+                            onChange={(e) => setRecurringCount(parseInt(e.target.value))}
+                            className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white focus:outline-none focus:border-[#FFD700]"
+                          >
+                            {[2, 3, 4, 5, 6, 8, 10, 12].map((count) => (
+                              <option key={count} value={count}>
+                                {count} {language === 'ar' ? 'مواعيد' : language === 'he' ? 'פגישות' : 'appointments'}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Preview */}
+                      <div className="bg-black/50 border border-[#FFD700]/20 rounded-lg p-4">
+                        <p className="text-xs text-gray-400 mb-2">
+                          {language === 'ar' ? 'معاينة المواعيد:' : language === 'he' ? 'תצוגה מקדימה:' : 'Preview:'}
+                        </p>
+                        <p className="text-sm text-[#FFD700]">
+                          {recurringCount} {language === 'ar' ? 'مواعيد' : language === 'he' ? 'פגישות' : 'appointments'} • {
+                            recurringType === 'weekly'
+                              ? (language === 'ar' ? 'كل أسبوع' : language === 'he' ? 'כל שבוע' : 'every week')
+                              : recurringType === 'biweekly'
+                              ? (language === 'ar' ? 'كل أسبوعين' : language === 'he' ? 'כל שבועיים' : 'every 2 weeks')
+                              : (language === 'ar' ? 'كل شهر' : language === 'he' ? 'כל חודש' : 'every month')
+                          } • {selectedTime}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
 
@@ -605,17 +737,26 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   {t('back')}
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
+                  whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
                   onClick={handleBooking}
-                  disabled={!customerName || !customerPhone}
+                  disabled={!customerName || !customerPhone || isSubmitting}
                   className="relative px-12 py-4 font-bold text-black rounded-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   <span className="relative z-10 flex items-center gap-2">
-                    {language === 'ar' ? 'إرسال طلب الحجز' : language === 'he' ? 'שלח בקשת הזמנה' : 'Send Booking Request'}
-                    <Sparkles className="w-5 h-5" />
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        {language === 'ar' ? 'جاري الإرسال...' : language === 'he' ? 'שולח...' : 'Sending...'}
+                      </>
+                    ) : (
+                      <>
+                        {language === 'ar' ? 'إرسال طلب الحجز' : language === 'he' ? 'שלח בקשת הזמנה' : 'Send Booking Request'}
+                        <Sparkles className="w-5 h-5" />
+                      </>
+                    )}
                   </span>
                 </motion.button>
               </div>

@@ -1,5 +1,6 @@
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './components/Toast';
 import LandingPage from './components/LandingPage';
 import AdminPage from './components/AdminPage';
 
@@ -10,7 +11,9 @@ function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        {isAdminPage ? <AdminPage /> : <LandingPage />}
+        <ToastProvider>
+          {isAdminPage ? <AdminPage /> : <LandingPage />}
+        </ToastProvider>
       </AuthProvider>
     </LanguageProvider>
   );

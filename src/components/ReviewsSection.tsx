@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, StarHalf, User, Calendar, MessageSquare, Send } from 'lucide-react';
+import { Star, StarHalf, User, Calendar, Send } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from './Toast';
 
 interface Review {
   id: string;
@@ -13,8 +15,9 @@ interface Review {
 }
 
 export default function ReviewsSection() {
+  const { currentUser, userProfile } = useAuth();
+  const toast = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [showForm, setShowForm] = useState(false);
   const [newReview, setNewReview] = useState({
     name: '',
     rating: 5,
@@ -26,6 +29,16 @@ export default function ReviewsSection() {
   useEffect(() => {
     loadReviews();
   }, []);
+
+  // Auto-fill user details when logged in
+  useEffect(() => {
+    if (currentUser && userProfile) {
+      setNewReview(prev => ({
+        ...prev,
+        name: userProfile.displayName || currentUser.email?.split('@')[0] || ''
+      }));
+    }
+  }, [currentUser, userProfile]);
 
   const loadReviews = () => {
     const stored = localStorage.getItem('shokha_reviews');
@@ -53,11 +66,10 @@ export default function ReviewsSection() {
       localStorage.setItem('shokha_reviews', JSON.stringify(updatedReviews));
       setReviews(updatedReviews);
 
-      // Reset form
+      // Reset form but keep it open
       setNewReview({ name: '', rating: 5, comment: '', service: '' });
-      setShowForm(false);
 
-      alert(language === 'ar'
+      toast.success(language === 'ar'
         ? 'شكراً لتقييمك! 🌟'
         : language === 'he'
         ? 'תודה על הביקורת שלך! 🌟'
@@ -198,37 +210,24 @@ export default function ReviewsSection() {
           )}
         </motion.div>
 
-        {/* Write Review Button */}
-        <div className="text-center mb-12">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowForm(!showForm)}
-            className="px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-xl hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center gap-2 mx-auto"
-          >
-            <MessageSquare className="w-5 h-5" />
-            {text.writeReview}
-          </motion.button>
-        </div>
-
         {/* Review Form */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="max-w-2xl mx-auto mb-12 overflow-hidden"
+        <div className="max-w-2xl mx-auto mb-12"
             >
               <div className="bg-zinc-900 border-2 border-[#FFD700]/30 rounded-xl p-6">
                 <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder={text.yourName}
-                    value={newReview.name}
-                    onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700]"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      placeholder={text.yourName}
+                      value={newReview.name}
+                      onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+                      readOnly={!!(currentUser && userProfile)}
+                      className={`w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700] ${currentUser && userProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    />
+                    {currentUser && userProfile && (
+                      <p className="text-xs text-gray-400 mt-1">Logged in as {userProfile.displayName}</p>
+                    )}
+                  </div>
 
                   <div>
                     <label className="block text-gray-400 mb-2">{text.yourRating}</label>
@@ -267,26 +266,16 @@ export default function ReviewsSection() {
                     className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700] resize-none"
                   />
 
-                  <div className="flex gap-4">
-                    <button
-                      onClick={submitReview}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center justify-center gap-2"
-                    >
-                      <Send className="w-5 h-5" />
-                      {text.submit}
-                    </button>
-                    <button
-                      onClick={() => setShowForm(false)}
-                      className="px-6 py-3 bg-zinc-800 text-gray-300 font-bold rounded-lg hover:bg-zinc-700 transition-all"
-                    >
-                      {text.cancel}
-                    </button>
-                  </div>
+                  <button
+                    onClick={submitReview}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-5 h-5" />
+                    {text.submit}
+                  </button>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
 
         {/* Reviews List */}
         <div className="max-w-4xl mx-auto space-y-6">
