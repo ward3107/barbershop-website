@@ -25,6 +25,7 @@ Your code is already on GitHub at: `ward3107/barbershop-website`
 5. **Add Environment Variables**:
    Click "Environment Variables" and add the following:
 
+   **Required Variables:**
    ```
    VITE_FIREBASE_API_KEY=your_actual_firebase_api_key
    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
@@ -32,16 +33,20 @@ Your code is already on GitHub at: `ward3107/barbershop-website`
    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID=123456789012
    VITE_FIREBASE_APP_ID=1:123456789012:web:abc123def456
+   ```
+
+   **Optional Variables (for notifications):**
+   ```
    VITE_TWILIO_ACCOUNT_SID=your_twilio_account_sid
    VITE_TWILIO_AUTH_TOKEN=your_twilio_auth_token
    VITE_TWILIO_PHONE_NUMBER=whatsapp:+972XXXXXXXXXX
    VITE_OWNER_WHATSAPP=whatsapp:+972XXXXXXXXXX
-   VITE_TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-   VITE_TELEGRAM_CHAT_ID=your_telegram_chat_id
    VITE_WEBHOOK_SECRET=your_secure_random_string_here
    ```
 
    **IMPORTANT**: Replace all `your_*` values with real credentials!
+
+   **Note**: You can skip Twilio variables if you don't need SMS/WhatsApp notifications.
 
 6. **Deploy**: Click "Deploy"
    - Vercel will build and deploy your site
@@ -163,7 +168,9 @@ After deploying and signing up:
 
 ---
 
-## Setting Up Twilio (For SMS/WhatsApp Notifications)
+## Setting Up Twilio (Optional - For SMS/WhatsApp Notifications)
+
+**Note**: This is completely optional. Skip this section if you don't need SMS/WhatsApp notifications.
 
 ### 1. Create Twilio Account
 1. Go to https://www.twilio.com/try-twilio
@@ -182,20 +189,12 @@ After deploying and signing up:
 2. Auth Token: Dashboard → Account Info (click to reveal)
 3. Phone Number: Your purchased number
 
----
-
-## Setting Up Telegram Bot (For Telegram Notifications)
-
-### 1. Create Bot
-1. Open Telegram and search for `@BotFather`
-2. Send `/newbot` command
-3. Follow instructions to create your bot
-4. Save the **Bot Token**
-
-### 2. Get Chat ID
-1. Add your bot to a group or message it
-2. Visit: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-3. Find `"chat":{"id":` - that's your Chat ID
+### 5. Add to Vercel
+Add these environment variables in Vercel:
+- `VITE_TWILIO_ACCOUNT_SID`
+- `VITE_TWILIO_AUTH_TOKEN`
+- `VITE_TWILIO_PHONE_NUMBER`
+- `VITE_OWNER_WHATSAPP`
 
 ---
 
@@ -205,7 +204,7 @@ After deploying and signing up:
 - [ ] Firebase authentication works (sign up/login)
 - [ ] Booking system creates bookings in Firestore
 - [ ] Admin panel is accessible (after setting isAdmin=true)
-- [ ] Notifications are being sent (SMS/WhatsApp/Telegram)
+- [ ] Notifications are being sent (if Twilio configured)
 - [ ] Environment variables are all set correctly
 - [ ] HTTPS is enabled (auto by Vercel/Netlify)
 - [ ] Custom domain configured (optional)
@@ -230,9 +229,10 @@ After deploying and signing up:
 - Verify TypeScript has no errors
 
 ### Notifications not working
-- Check Twilio/Telegram credentials
+- Check Twilio credentials (if configured)
 - Verify phone numbers are in correct format
 - Check browser console for errors
+- Note: Notifications are optional - website works without them
 
 ---
 
