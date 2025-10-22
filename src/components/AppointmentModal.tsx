@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import EnhancedCalendar from './EnhancedCalendar';
 import {
@@ -70,6 +70,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const { t, language } = useLanguage();
   const { currentUser, userProfile } = useAuth();
   const toast = useToast();
+  const actionButtonsRef = useRef<HTMLDivElement>(null);
 
   // Handle browser back button
   useEffect(() => {
@@ -141,6 +142,19 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
       }
     }
   }, [date]);
+
+  // Auto-scroll to action buttons when both date and time are selected
+  useEffect(() => {
+    if (step === 'datetime' && date && selectedTime && actionButtonsRef.current) {
+      // Small delay to ensure rendering is complete
+      setTimeout(() => {
+        actionButtonsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end'
+        });
+      }, 300);
+    }
+  }, [date, selectedTime, step]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -649,7 +663,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-8 flex justify-center gap-4">
+              <div ref={actionButtonsRef} className="mt-8 flex justify-center gap-4">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
