@@ -11,19 +11,21 @@ const requiredEnvVars = [
 ];
 
 const optionalEnvVars = [
-  'VITE_TWILIO_ACCOUNT_SID',
-  'VITE_TWILIO_AUTH_TOKEN',
-  'VITE_TWILIO_WHATSAPP_NUMBER',
+  // SAFE optional environment variables
   'VITE_OWNER_WHATSAPP',
   'VITE_OWNER_PHONE',
   'VITE_MAKE_WEBHOOK_URL',
-  'VITE_TELEGRAM_BOT_TOKEN',
-  'VITE_TELEGRAM_CHAT_ID',
   'VITE_EMAILJS_SERVICE_ID',
   'VITE_EMAILJS_TEMPLATE_ID',
   'VITE_EMAILJS_USER_ID',
   'VITE_OWNER_EMAIL',
   'VITE_HCAPTCHA_SITE_KEY'
+  // REMOVED FOR SECURITY:
+  // - VITE_TWILIO_ACCOUNT_SID (backend only)
+  // - VITE_TWILIO_AUTH_TOKEN (backend only)
+  // - VITE_TWILIO_WHATSAPP_NUMBER (backend only)
+  // - VITE_TELEGRAM_BOT_TOKEN (backend only)
+  // - VITE_TELEGRAM_CHAT_ID (backend only)
 ];
 
 /**
@@ -111,26 +113,12 @@ For more information, see:
 /**
  * Check if specific feature is configured
  */
-export function isFeatureConfigured(feature: 'twilio' | 'make' | 'telegram' | 'emailjs' | 'hcaptcha'): boolean {
+export function isFeatureConfigured(feature: 'make' | 'emailjs' | 'hcaptcha'): boolean {
   switch (feature) {
-    case 'twilio':
-      return !!(
-        import.meta.env.VITE_TWILIO_ACCOUNT_SID &&
-        import.meta.env.VITE_TWILIO_AUTH_TOKEN &&
-        !import.meta.env.VITE_TWILIO_ACCOUNT_SID.includes('YOUR_')
-      );
-
     case 'make':
       return !!(
         import.meta.env.VITE_MAKE_WEBHOOK_URL &&
         !import.meta.env.VITE_MAKE_WEBHOOK_URL.includes('YOUR_')
-      );
-
-    case 'telegram':
-      return !!(
-        import.meta.env.VITE_TELEGRAM_BOT_TOKEN &&
-        import.meta.env.VITE_TELEGRAM_CHAT_ID &&
-        !import.meta.env.VITE_TELEGRAM_BOT_TOKEN.includes('YOUR_')
       );
 
     case 'emailjs':
@@ -152,20 +140,22 @@ export function isFeatureConfigured(feature: 'twilio' | 'make' | 'telegram' | 'e
   }
 }
 
+// REMOVED: 'twilio' and 'telegram' feature checks
+// These services should be implemented on the backend for security.
+
 /**
  * Get environment info for debugging (safe - no sensitive data)
  */
 export function getEnvironmentInfo(): Record<string, boolean> {
   return {
     firebaseConfigured: true, // Always true if validation passed
-    twilioConfigured: isFeatureConfigured('twilio'),
     makeConfigured: isFeatureConfigured('make'),
-    telegramConfigured: isFeatureConfigured('telegram'),
     emailjsConfigured: isFeatureConfigured('emailjs'),
     hcaptchaConfigured: isFeatureConfigured('hcaptcha'),
     ownerWhatsappConfigured: !!(
       import.meta.env.VITE_OWNER_WHATSAPP &&
       !import.meta.env.VITE_OWNER_WHATSAPP.includes('XXXX')
     )
+    // REMOVED: twilioConfigured, telegramConfigured (moved to backend)
   };
 }
