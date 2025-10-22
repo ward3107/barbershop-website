@@ -289,9 +289,9 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
         </div>
 
         {/* Content */}
-        <div className="p-3 md:p-6 overflow-y-auto max-h-[calc(90vh-200px)] relative z-10">
+        <div className="p-3 md:p-6 pb-6 md:pb-8 overflow-y-auto max-h-[calc(90vh-180px)] md:max-h-[calc(90vh-160px)] relative z-10">
           {activeTab === 'profile' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 mb-4">
               <div className="bg-black/50 border border-[#FFD700]/30 rounded-lg p-3 md:p-6">
                 <h3 className="text-[#FFD700] font-bold mb-3 md:mb-4 text-sm md:text-base">{text.profile}</h3>
                 <div className="space-y-3">
