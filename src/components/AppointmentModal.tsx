@@ -772,7 +772,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   </button>
                 )}
               </div>
-              <p className="text-gray-400 text-center mb-8">
+              <p className="text-gray-400 text-center mb-8 mt-4">
                 {currentUser
                   ? (language === 'ar' ? '✓ تم تحميل معلوماتك من حسابك' : language === 'he' ? '✓ המידע שלך נטען מהחשבון' : '✓ Your info loaded from account')
                   : customerName
@@ -781,7 +781,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 }
               </p>
 
-              <div className="max-w-2xl mx-auto space-y-6">
+              <div className="max-w-2xl mx-auto space-y-6 mt-8">
                 {/* Selected Service Summary */}
                 <div className="bg-zinc-900/50 border border-[#FFD700]/30 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
