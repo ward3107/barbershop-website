@@ -578,14 +578,13 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Frequency */}
                         <div>
-                          <label className="block text-gray-400 text-sm mb-2">
-                            <label
-                              htmlFor="recurringType"
-                              className="block text-gray-400 text-sm mb-2"
-                            >
-                              {language === 'ar' ? 'التكرار' : language === 'he' ? 'תדירות' : 'Frequency'}
-                            </label>
-                            <select
+                          <label
+                            htmlFor="recurringType"
+                            className="block text-gray-400 text-sm mb-2"
+                          >
+                            {language === 'ar' ? 'التكرار' : language === 'he' ? 'תדירות' : 'Frequency'}
+                          </label>
+                          <select
                               id="recurringType"
                               aria-label={
                                 language === 'ar'
