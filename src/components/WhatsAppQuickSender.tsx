@@ -47,7 +47,7 @@ export default function WhatsAppQuickSender() {
 ${window.location.origin}/admin
     `.trim();
 
-    const ownerWhatsapp = '972XXXXXXXXX'; // Replace with your number
+    const ownerWhatsapp = import.meta.env.VITE_OWNER_WHATSAPP || '';
     const whatsappUrl = `https://wa.me/${ownerWhatsapp}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

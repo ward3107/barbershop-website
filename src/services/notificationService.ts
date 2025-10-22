@@ -20,19 +20,19 @@ interface NotificationConfig {
   ownerPhone?: string;
 }
 
-// Configuration - Add your actual credentials here
+// Configuration - Using environment variables for security
 const config: NotificationConfig = {
   // WhatsApp - Most recommended for Middle East
-  ownerWhatsapp: '+972XXXXXXXXX', // Replace with your WhatsApp number
+  ownerWhatsapp: import.meta.env.VITE_OWNER_WHATSAPP || '',
 
   // Email - using EmailJS (free for 200 emails/month)
-  emailServiceId: 'YOUR_EMAILJS_SERVICE_ID',
-  emailTemplateId: 'YOUR_EMAILJS_TEMPLATE_ID',
-  emailUserId: 'YOUR_EMAILJS_USER_ID',
-  ownerEmail: 'owner@shokhabarbershop.com',
+  emailServiceId: import.meta.env.VITE_EMAILJS_SERVICE_ID || '',
+  emailTemplateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '',
+  emailUserId: import.meta.env.VITE_EMAILJS_USER_ID || '',
+  ownerEmail: import.meta.env.VITE_OWNER_EMAIL || 'owner@shokhabarbershop.com',
 
   // SMS - using Twilio
-  ownerPhone: '+972XXXXXXXXX', // Replace with your phone number
+  ownerPhone: import.meta.env.VITE_OWNER_PHONE || '',
 };
 
 // 1. WHATSAPP NOTIFICATION (Most Recommended for Israel/Palestine)
@@ -161,8 +161,13 @@ ${booking.date.toLocaleDateString()} ${booking.time}`;
 // 4. TELEGRAM BOT (Free and Easy)
 export async function sendTelegramToOwner(booking: any) {
   // First create a Telegram bot using @BotFather
-  const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
-  const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID'; // Owner's chat ID
+  const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
+  const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '';
+
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn('Telegram bot not configured');
+    return;
+  }
 
   const message = `
 🔔 <b>New Booking Request</b>
@@ -192,32 +197,12 @@ Use /approve_${booking.id} or /reject_${booking.id}
 }
 
 // 5. PUSH NOTIFICATIONS (Using Firebase Cloud Messaging)
-export async function sendPushNotification(booking: any) {
-  // Requires Firebase setup
-  const FCM_SERVER_KEY = 'YOUR_FCM_SERVER_KEY';
-  const OWNER_FCM_TOKEN = 'OWNER_DEVICE_TOKEN';
-
-  try {
-    await fetch('https://fcm.googleapis.com/fcm/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `key=${FCM_SERVER_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: OWNER_FCM_TOKEN,
-        notification: {
-          title: 'New Booking Request',
-          body: `${booking.customerName} - ${booking.service}`,
-          icon: '/logo.png',
-          click_action: `${window.location.origin}/admin`
-        },
-        data: booking
-      })
-    });
-  } catch (error) {
-    console.error('Push notification error:', error);
-  }
+export async function sendPushNotification(_booking: any) {
+  // ⚠️ SECURITY WARNING: FCM server key should be on backend only!
+  // This functionality has been disabled for security reasons.
+  // To implement push notifications securely, use Firebase Admin SDK on your backend.
+  console.warn('FCM push notifications should be implemented server-side for security');
+  return;
 }
 
 // Main function to notify owner (uses multiple methods)

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, User, Phone } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Mail, Lock, User, Phone } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import PasswordStrength, { validatePassword } from './PasswordStrength';
 
 interface AuthModalProps {
   open: boolean;
@@ -11,84 +12,83 @@ interface AuthModalProps {
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup, loginWithGoogle, currentUser, userProfile } =
-    useAuth();
+  const { login, signup, loginWithGoogle, currentUser, userProfile } = useAuth();
   const { language } = useLanguage();
 
   const texts = {
     en: {
-      login: "Login",
-      signup: "Sign Up",
-      email: "Email",
-      password: "Password",
-      name: "Full Name",
-      phone: "Phone Number (Optional)",
-      loginButton: "Login",
-      signupButton: "Create Account",
-      googleLogin: "Continue with Google",
-      facebookLogin: "Continue with Facebook",
-      appleLogin: "Continue with Apple",
-      microsoftLogin: "Continue with Microsoft",
+      login: 'Login',
+      signup: 'Sign Up',
+      email: 'Email',
+      password: 'Password',
+      name: 'Full Name',
+      phone: 'Phone Number (Optional)',
+      loginButton: 'Login',
+      signupButton: 'Create Account',
+      googleLogin: 'Continue with Google',
+      facebookLogin: 'Continue with Facebook',
+      appleLogin: 'Continue with Apple',
+      microsoftLogin: 'Continue with Microsoft',
       switchToSignup: "Don't have an account? Sign up",
-      switchToLogin: "Already have an account? Login",
-      errorTitle: "Error",
-      successTitle: "Success!",
-      loginSuccess: "Welcome back!",
-      signupSuccess: "Account created successfully!",
-      welcomeBack: "Welcome back,",
-      alreadyLoggedIn: "You are already logged in!",
+      switchToLogin: 'Already have an account? Login',
+      errorTitle: 'Error',
+      successTitle: 'Success!',
+      loginSuccess: 'Welcome back!',
+      signupSuccess: 'Account created successfully!',
+      welcomeBack: 'Welcome back,',
+      alreadyLoggedIn: 'You are already logged in!'
     },
     ar: {
-      login: "تسجيل الدخول",
-      signup: "إنشاء حساب",
-      email: "البريد الإلكتروني",
-      password: "كلمة المرور",
-      name: "الاسم الكامل",
-      phone: "رقم الهاتف (اختياري)",
-      loginButton: "تسجيل الدخول",
-      signupButton: "إنشاء حساب",
-      googleLogin: "المتابعة مع جوجل",
-      facebookLogin: "المتابعة مع فيسبوك",
-      appleLogin: "المتابعة مع أبل",
-      microsoftLogin: "المتابعة مع مايكروسوفت",
-      switchToSignup: "ليس لديك حساب؟ سجل الآن",
-      switchToLogin: "لديك حساب بالفعل؟ سجل الدخول",
-      errorTitle: "خطأ",
-      successTitle: "نجح!",
-      loginSuccess: "مرحباً بعودتك!",
-      signupSuccess: "تم إنشاء الحساب بنجاح!",
-      welcomeBack: "مرحباً بعودتك،",
-      alreadyLoggedIn: "أنت مسجل دخولك بالفعل!",
+      login: 'تسجيل الدخول',
+      signup: 'إنشاء حساب',
+      email: 'البريد الإلكتروني',
+      password: 'كلمة المرور',
+      name: 'الاسم الكامل',
+      phone: 'رقم الهاتف (اختياري)',
+      loginButton: 'تسجيل الدخول',
+      signupButton: 'إنشاء حساب',
+      googleLogin: 'المتابعة مع جوجل',
+      facebookLogin: 'المتابعة مع فيسبوك',
+      appleLogin: 'المتابعة مع أبل',
+      microsoftLogin: 'المتابعة مع مايكروسوفت',
+      switchToSignup: 'ليس لديك حساب؟ سجل الآن',
+      switchToLogin: 'لديك حساب بالفعل؟ سجل الدخول',
+      errorTitle: 'خطأ',
+      successTitle: 'نجح!',
+      loginSuccess: 'مرحباً بعودتك!',
+      signupSuccess: 'تم إنشاء الحساب بنجاح!',
+      welcomeBack: 'مرحباً بعودتك،',
+      alreadyLoggedIn: 'أنت مسجل دخولك بالفعل!'
     },
     he: {
-      login: "התחברות",
-      signup: "הרשמה",
-      email: "אימייל",
-      password: "סיסמה",
-      name: "שם מלא",
-      phone: "מספר טלפון (אופציונלי)",
-      loginButton: "התחבר",
-      signupButton: "צור חשבון",
-      googleLogin: "המשך עם Google",
-      facebookLogin: "המשך עם Facebook",
-      appleLogin: "המשך עם Apple",
-      microsoftLogin: "המשך עם Microsoft",
-      switchToSignup: "אין לך חשבון? הירשם",
-      switchToLogin: "כבר יש לך חשבון? התחבר",
-      errorTitle: "שגיאה",
-      successTitle: "הצלחה!",
-      loginSuccess: "ברוך שובך!",
-      signupSuccess: "חשבון נוצר בהצלחה!",
-      welcomeBack: "ברוך שובך,",
-      alreadyLoggedIn: "אתה כבר מחובר!",
-    },
+      login: 'התחברות',
+      signup: 'הרשמה',
+      email: 'אימייל',
+      password: 'סיסמה',
+      name: 'שם מלא',
+      phone: 'מספר טלפון (אופציונלי)',
+      loginButton: 'התחבר',
+      signupButton: 'צור חשבון',
+      googleLogin: 'המשך עם Google',
+      facebookLogin: 'המשך עם Facebook',
+      appleLogin: 'המשך עם Apple',
+      microsoftLogin: 'המשך עם Microsoft',
+      switchToSignup: 'אין לך חשבון? הירשם',
+      switchToLogin: 'כבר יש לך חשבון? התחבר',
+      errorTitle: 'שגיאה',
+      successTitle: 'הצלחה!',
+      loginSuccess: 'ברוך שובך!',
+      signupSuccess: 'חשבון נוצר בהצלחה!',
+      welcomeBack: 'ברוך שובך,',
+      alreadyLoggedIn: 'אתה כבר מחובר!'
+    }
   };
 
   const text = texts[language as keyof typeof texts];
@@ -97,47 +97,57 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   useEffect(() => {
     if (open) {
       // Push a new state when modal opens
-      window.history.pushState({ modal: "auth" }, "");
+      window.history.pushState({ modal: 'auth' }, '');
 
       const handlePopState = () => {
         onOpenChange(false);
       };
 
-      window.addEventListener("popstate", handlePopState);
+      window.addEventListener('popstate', handlePopState);
 
       return () => {
-        window.removeEventListener("popstate", handlePopState);
+        window.removeEventListener('popstate', handlePopState);
       };
     }
   }, [open, onOpenChange]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
       if (isLogin) {
         await login(email, password);
       } else {
+        // Validate display name
         if (!displayName.trim()) {
-          setError("Please enter your name");
+          setError('Please enter your name');
           setLoading(false);
           return;
         }
+
+        // Validate password strength for signup
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+          setError('Password does not meet security requirements. Please ensure at least 8 characters with uppercase, lowercase, number, and special character.');
+          setLoading(false);
+          return;
+        }
+
         await signup(email, password, displayName, phone);
       }
       onOpenChange(false);
       resetForm();
     } catch (err: any) {
-      setError(err.message || "An error occurred");
+      setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -145,23 +155,24 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       onOpenChange(false);
       resetForm();
     } catch (err: any) {
-      setError(err.message || "Google login failed");
+      setError(err.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
   };
 
+
   const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setDisplayName("");
-    setPhone("");
-    setError("");
+    setEmail('');
+    setPassword('');
+    setDisplayName('');
+    setPhone('');
+    setError('');
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setError("");
+    setError('');
   };
 
   if (!open) return null;
@@ -190,8 +201,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <button
             onClick={() => onOpenChange(false)}
             className="absolute top-4 right-4 text-gray-400 hover:text-[#FFD700] transition-colors z-10"
-            title="Close"
-            aria-label="Close"
           >
             <X className="w-6 h-6" />
           </button>
@@ -229,156 +238,154 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
                 {/* Error Message */}
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-red-400 text-sm"
-                  >
-                    {error}
-                  </motion.div>
-                )}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-red-400 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {!isLogin && (
-                    <div>
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        {text.name}
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                          placeholder={text.name}
-                          required={!isLogin}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-gray-300 text-sm font-medium mb-2">
-                      {text.email}
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                        placeholder={text.email}
-                        required
-                      />
-                    </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    {text.name}
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                      placeholder={text.name}
+                      required={!isLogin}
+                    />
                   </div>
-
-                  <div>
-                    <label className="block text-gray-300 text-sm font-medium mb-2">
-                      {text.password}
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                        placeholder={text.password}
-                        autoComplete={
-                          isLogin ? "current-password" : "new-password"
-                        }
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
-
-                  {!isLogin && (
-                    <div>
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        {text.phone}
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                          placeholder={text.phone}
-                          dir="ltr"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <motion.button
-                    type="submit"
-                    disabled={loading}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                        <span>Loading...</span>
-                      </div>
-                    ) : isLogin ? (
-                      text.loginButton
-                    ) : (
-                      text.signupButton
-                    )}
-                  </motion.button>
-                </form>
-
-                {/* Divider */}
-                <div className="flex items-center gap-4 my-6">
-                  <div className="flex-1 h-px bg-[#FFD700]/30" />
-                  <span className="text-gray-400 text-sm">OR</span>
-                  <div className="flex-1 h-px bg-[#FFD700]/30" />
                 </div>
+              )}
 
-                {/* Google Login */}
-                <motion.button
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-white text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-white/50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                  {text.googleLogin}
-                </motion.button>
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  {text.email}
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                    placeholder={text.email}
+                    required
+                  />
+                </div>
+              </div>
 
-                {/* Toggle Mode */}
-                <button
-                  onClick={toggleMode}
-                  className="w-full text-center text-gray-400 hover:text-[#FFD700] transition-colors mt-6 text-sm"
-                >
-                  {isLogin ? text.switchToSignup : text.switchToLogin}
-                </button>
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  {text.password}
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                    placeholder={text.password}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    required
+                    minLength={8}
+                  />
+                </div>
+                {/* Show password strength indicator for signup */}
+                {!isLogin && <PasswordStrength password={password} show={true} />}
+              </div>
+
+              {!isLogin && (
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    {text.phone}
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                      placeholder={text.phone}
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <motion.button
+                type="submit"
+                disabled={loading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Loading...</span>
+                  </div>
+                ) : (
+                  isLogin ? text.loginButton : text.signupButton
+                )}
+              </motion.button>
+            </form>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-[#FFD700]/30" />
+              <span className="text-gray-400 text-sm">OR</span>
+              <div className="flex-1 h-px bg-[#FFD700]/30" />
+            </div>
+
+            {/* Google Login */}
+            <motion.button
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-white text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-white/50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              {text.googleLogin}
+            </motion.button>
+
+            {/* Toggle Mode */}
+            <button
+              onClick={toggleMode}
+              className="w-full text-center text-gray-400 hover:text-[#FFD700] transition-colors mt-6 text-sm"
+            >
+              {isLogin ? text.switchToSignup : text.switchToLogin}
+            </button>
               </>
             )}
           </div>
