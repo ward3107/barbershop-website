@@ -17,15 +17,17 @@ interface Booking {
   status: 'pending' | 'approved' | 'rejected';
 }
 
-// IMPORTANT: Get these from Twilio Dashboard
-// https://console.twilio.com/
+// ⚠️ SECURITY WARNING: These credentials should be moved to a backend service!
+// Never expose Twilio auth tokens in client-side code in production.
+// This is a temporary solution for development only.
+// For production, create a backend API endpoint that handles Twilio calls securely.
 const TWILIO_CONFIG: TwilioConfig = {
-  accountSid: 'YOUR_ACCOUNT_SID', // Get from Twilio Console
-  authToken: 'YOUR_AUTH_TOKEN',   // Get from Twilio Console
-  whatsappNumber: 'whatsapp:+14155238886', // Twilio Sandbox number or your approved number
+  accountSid: import.meta.env.VITE_TWILIO_ACCOUNT_SID || '',
+  authToken: import.meta.env.VITE_TWILIO_AUTH_TOKEN || '',
+  whatsappNumber: import.meta.env.VITE_TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886',
 };
 
-const OWNER_WHATSAPP = 'whatsapp:+972XXXXXXXXX'; // Replace with your WhatsApp number
+const OWNER_WHATSAPP = `whatsapp:+${import.meta.env.VITE_OWNER_WHATSAPP || ''}` as string;
 
 /**
  * Send WhatsApp message via Twilio API
@@ -142,34 +144,7 @@ export async function sendCustomerRejection(booking: Booking): Promise<boolean> 
   return await sendWhatsAppMessage(whatsappNumber, message);
 }
 
-/**
- * Update Twilio configuration
- * Call this function after you get your Twilio credentials
- */
-export function updateTwilioConfig(accountSid: string, authToken: string, whatsappNumber: string) {
-  TWILIO_CONFIG.accountSid = accountSid;
-  TWILIO_CONFIG.authToken = authToken;
-  TWILIO_CONFIG.whatsappNumber = whatsappNumber;
-
-  // Save to localStorage for persistence
-  localStorage.setItem('twilio_config', JSON.stringify(TWILIO_CONFIG));
-
-  console.log('✅ Twilio configuration updated successfully!');
-}
-
-/**
- * Load Twilio config from localStorage on startup
- */
-export function loadTwilioConfig() {
-  const saved = localStorage.getItem('twilio_config');
-  if (saved) {
-    const config = JSON.parse(saved);
-    TWILIO_CONFIG.accountSid = config.accountSid;
-    TWILIO_CONFIG.authToken = config.authToken;
-    TWILIO_CONFIG.whatsappNumber = config.whatsappNumber;
-    console.log('✅ Twilio configuration loaded');
-  }
-}
-
-// Load config on module import
-loadTwilioConfig();
+// ⚠️ REMOVED: updateTwilioConfig() and loadTwilioConfig() functions
+// SECURITY FIX: Never store credentials in localStorage!
+// All configuration should come from environment variables only.
+// If you need dynamic configuration, it must be done server-side.
