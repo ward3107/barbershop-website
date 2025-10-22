@@ -56,27 +56,31 @@ export function validateEnvironment(): void {
     const errors: string[] = [];
 
     if (missing.length > 0) {
-      errors.push(`❌ Missing required environment variables:\n  - ${missing.join('\n  - ')}`);
+      errors.push(`⚠️ Missing Firebase environment variables:\n  - ${missing.join('\n  - ')}`);
     }
 
     if (invalid.length > 0) {
-      errors.push(`❌ Invalid environment variables (contains placeholder values):\n  - ${invalid.join('\n  - ')}`);
+      errors.push(`⚠️ Invalid environment variables (contains placeholder values):\n  - ${invalid.join('\n  - ')}`);
     }
 
-    const errorMessage = `
+    const warningMessage = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 ENVIRONMENT CONFIGURATION ERROR
+⚠️ FIREBASE NOT CONFIGURED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${errors.join('\n\n')}
 
-📝 How to fix:
-1. Copy .env.example to .env
-2. Fill in all required values from your Firebase console
-3. Restart the development server
+ℹ️ The app will run with limited features:
+- ✅ Booking system (localStorage)
+- ✅ Form validation
+- ✅ Language detection
+- ❌ User authentication
+- ❌ Admin panel
 
-💡 For testing: Demo values are OK as long as they don't contain
-   "YOUR_", "your_", "Example", or "Replace"
+📝 To enable all features:
+1. Copy .env.example to .env
+2. Fill in Firebase values from your Firebase console
+3. Restart the development server
 
 For more information, see:
 - FIREBASE_SETUP.md
@@ -85,8 +89,8 @@ For more information, see:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `.trim();
 
-    console.error(errorMessage);
-    throw new Error('Environment configuration error - see console for details');
+    console.warn(warningMessage);
+    // Don't throw error - allow app to run without Firebase
   }
 
   // Warn about optional variables
