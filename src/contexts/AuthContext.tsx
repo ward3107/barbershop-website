@@ -17,6 +17,7 @@ interface UserProfile {
   email: string;
   displayName: string;
   phone?: string;
+  isAdmin: boolean;
   loyaltyPoints: number;
   totalBookings: number;
   createdAt: any;
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: user.email,
       displayName,
       phone: phone || '',
+      isAdmin: false, // By default, users are not admins
       loyaltyPoints: 0,
       totalBookings: 0,
       createdAt: serverTimestamp()
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: user.email || '',
         displayName: user.displayName || user.email?.split('@')[0] || 'User',
         phone: '',
+        isAdmin: false, // By default, OAuth users are not admins
         loyaltyPoints: 0,
         totalBookings: 0,
         createdAt: serverTimestamp()

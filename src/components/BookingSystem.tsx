@@ -368,8 +368,9 @@ export async function createBooking(
   time: string,
   customerEmail?: string
 ): Promise<Booking> {
+  // Use crypto.randomUUID() for secure, unpredictable booking IDs
   const booking: Booking = {
-    id: `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: crypto.randomUUID(),
     customerName,
     customerPhone,
     customerEmail,
@@ -401,7 +402,7 @@ ${window.location.origin}/admin
     `.trim();
 
     // Method 1: WhatsApp Web (opens but needs manual send)
-    const ownerWhatsapp = '972XXXXXXXXX'; // Replace with your WhatsApp number
+    const ownerWhatsapp = import.meta.env.VITE_OWNER_WHATSAPP || '';
     const whatsappUrl = `https://wa.me/${ownerWhatsapp}?text=${encodeURIComponent(message)}`;
 
     // Method 2: Browser notification (if permission granted)

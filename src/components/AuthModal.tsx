@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import PasswordStrength, { validatePassword } from './PasswordStrength';
 
 interface AuthModalProps {
   open: boolean;
@@ -119,11 +120,21 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       if (isLogin) {
         await login(email, password);
       } else {
+        // Validate display name
         if (!displayName.trim()) {
           setError('Please enter your name');
           setLoading(false);
           return;
         }
+
+        // Validate password strength for signup
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+          setError('Password does not meet security requirements. Please ensure at least 8 characters with uppercase, lowercase, number, and special character.');
+          setLoading(false);
+          return;
+        }
+
         await signup(email, password, displayName, phone);
       }
       onOpenChange(false);
@@ -288,9 +299,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder={text.password}
                     autoComplete={isLogin ? "current-password" : "new-password"}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                 </div>
+                {/* Show password strength indicator for signup */}
+                {!isLogin && <PasswordStrength password={password} show={true} />}
               </div>
 
               {!isLogin && (

@@ -28,7 +28,7 @@ ${window.location.origin}/admin
     `.trim();
 
     // Your WhatsApp number (without +)
-    const ownerWhatsapp = '972XXXXXXXXX'; // Replace with your number
+    const ownerWhatsapp = import.meta.env.VITE_OWNER_WHATSAPP || '';
     const whatsappUrl = `https://wa.me/${ownerWhatsapp}?text=${encodeURIComponent(message)}`;
 
     console.log('📱 Opening WhatsApp with URL:', whatsappUrl);

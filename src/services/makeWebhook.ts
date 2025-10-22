@@ -16,7 +16,7 @@ interface Booking {
 }
 
 // Make.com Webhook URL - You'll get this from Make.com after creating scenario
-const MAKE_WEBHOOK_URL = 'YOUR_MAKE_WEBHOOK_URL_HERE';
+const MAKE_WEBHOOK_URL = import.meta.env.VITE_MAKE_WEBHOOK_URL || '';
 
 /**
  * Send new booking to Make.com
@@ -131,24 +131,5 @@ export async function sendRejectionToMake(booking: Booking): Promise<boolean> {
   }
 }
 
-/**
- * Update Make.com webhook URL
- * Call this after you get your webhook URL from Make.com
- */
-export function setMakeWebhookUrl(url: string) {
-  // Save to localStorage for persistence
-  localStorage.setItem('make_webhook_url', url);
-  console.log('✅ Make.com webhook URL updated:', url);
-}
-
-/**
- * Load webhook URL from localStorage
- */
-export function loadMakeWebhookUrl() {
-  const saved = localStorage.getItem('make_webhook_url');
-  if (saved) {
-    console.log('✅ Make.com webhook URL loaded');
-    return saved;
-  }
-  return null;
-}
+// ⚠️ REMOVED: setMakeWebhookUrl() and loadMakeWebhookUrl() functions
+// SECURITY FIX: Configuration should come from environment variables only.
