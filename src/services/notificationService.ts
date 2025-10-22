@@ -197,7 +197,7 @@ Use /approve_${booking.id} or /reject_${booking.id}
 }
 
 // 5. PUSH NOTIFICATIONS (Using Firebase Cloud Messaging)
-export async function sendPushNotification(booking: any) {
+export async function sendPushNotification(_booking: any) {
   // ⚠️ SECURITY WARNING: FCM server key should be on backend only!
   // This functionality has been disabled for security reasons.
   // To implement push notifications securely, use Firebase Admin SDK on your backend.

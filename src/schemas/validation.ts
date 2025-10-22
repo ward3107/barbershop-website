@@ -83,7 +83,7 @@ export const serviceSchema = z.enum([
   'Haircut + Beard',
   'Premium Package'
 ], {
-  errorMap: () => ({ message: 'Please select a valid service' })
+  message: 'Please select a valid service'
 });
 
 // ===== Date/Time Validators =====
@@ -193,7 +193,7 @@ export function safeValidate<T>(
     return { success: true, data: validated };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const firstError = error.errors[0];
+      const firstError = error.issues[0];
       return {
         success: false,
         error: firstError?.message || 'Validation failed'

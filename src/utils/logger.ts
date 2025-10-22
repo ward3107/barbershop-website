@@ -216,7 +216,7 @@ class Logger {
     if (isProd) {
       console.warn('WARNING: Raw logging used in production');
     }
-    console.log(formatMessage('raw', message), data);
+    console.log(formatMessage('info', message), data);
   }
 }
 
