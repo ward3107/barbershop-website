@@ -48,8 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Check if Firebase is available
+  const isFirebaseAvailable = auth !== null && db !== null;
+
   // Signup function
   async function signup(email: string, password: string, displayName: string, phone?: string) {
+    if (!isFirebaseAvailable || !auth || !db) {
+      throw new Error('Firebase is not configured. Please set up Firebase credentials.');
+    }
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -73,11 +79,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login function
   async function login(email: string, password: string) {
+    if (!isFirebaseAvailable || !auth) {
+      throw new Error('Firebase is not configured. Please set up Firebase credentials.');
+    }
     await signInWithEmailAndPassword(auth, email, password);
   }
 
   // Google Login
   async function loginWithGoogle() {
+    if (!isFirebaseAvailable || !auth || !db) {
+      throw new Error('Firebase is not configured. Please set up Firebase credentials.');
+    }
     const provider = new GoogleAuthProvider();
 
     const userCredential = await signInWithPopup(auth, provider);
@@ -104,12 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout function
   async function logout() {
+    if (!isFirebaseAvailable || !auth) {
+      throw new Error('Firebase is not configured. Please set up Firebase credentials.');
+    }
     await signOut(auth);
     setUserProfile(null);
   }
 
   // Load user profile from Firestore
   async function loadUserProfile(uid: string) {
+    if (!isFirebaseAvailable || !db) return;
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
       if (userDoc.exists()) {
@@ -122,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Update user profile
   async function updateUserProfile(data: Partial<UserProfile>) {
-    if (!currentUser) return;
+    if (!isFirebaseAvailable || !db || !currentUser) return;
 
     await setDoc(doc(db, 'users', currentUser.uid), data, { merge: true });
     await loadUserProfile(currentUser.uid);
@@ -130,6 +146,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Listen for auth state changes
   useEffect(() => {
+    if (!isFirebaseAvailable || !auth) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {

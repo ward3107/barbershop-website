@@ -65,6 +65,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringType, setRecurringType] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
   const [recurringCount, setRecurringCount] = useState(4);
+  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const { t, language } = useLanguage();
   const { currentUser, userProfile } = useAuth();
   const toast = useToast();
@@ -178,8 +180,61 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
     return dates;
   };
 
+  const validatePhone = (phone: string): boolean => {
+    // Remove spaces and dashes
+    const cleaned = phone.replace(/[\s-]/g, '');
+
+    // Check if it contains only digits and optional + at the start
+    const phoneRegex = /^\+?[0-9]{9,15}$/;
+
+    if (!phoneRegex.test(cleaned)) {
+      setPhoneError(
+        language === 'ar'
+          ? 'رقم الهاتف يجب أن يحتوي على 9-15 رقم'
+          : language === 'he'
+          ? 'מספר הטלפון צריך להכיל 9-15 ספרות'
+          : 'Phone number must contain 9-15 digits'
+      );
+      return false;
+    }
+
+    setPhoneError('');
+    return true;
+  };
+
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setEmailError('');
+      return true; // Email is optional
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      setEmailError(
+        language === 'ar'
+          ? 'البريد الإلكتروني غير صالح'
+          : language === 'he'
+          ? 'כתובת דואר אלקטרוני לא חוקית'
+          : 'Invalid email address'
+      );
+      return false;
+    }
+
+    setEmailError('');
+    return true;
+  };
+
   const handleBooking = async () => {
     if (date && selectedTime && selectedService && customerName && customerPhone) {
+      // Validate phone and email before submitting
+      const isPhoneValid = validatePhone(customerPhone);
+      const isEmailValid = validateEmail(customerEmail);
+
+      if (!isPhoneValid || !isEmailValid) {
+        return; // Stop if validation fails
+      }
+
       const service = services.find(s => s.id === selectedService);
       const serviceName = language === 'ar' ? service?.nameAr : language === 'he' ? service?.nameHe : service?.nameEn;
 
@@ -266,7 +321,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-4xl w-[95vw] sm:w-full bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="max-w-4xl w-[95vw] sm:w-full bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onMouseMove={handleMouseMove}
       >
         {/* Golden gradient overlay */}
@@ -285,11 +340,11 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
         />
 
         {/* Header with crown animation */}
-        <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-4 md:p-6">
+        <div className="relative bg-gradient-to-r from-black via-[#1a1a1a] to-black border-b border-[#FFD700]/30 p-3 md:p-6 pb-4 md:pb-6">
           {/* Close button - visible on mobile */}
           <button
             onClick={() => handleClose(false)}
-            className="absolute top-2 right-2 md:hidden z-50 w-8 h-8 rounded-full bg-black/80 border border-[#FFD700]/50 flex items-center justify-center text-white hover:bg-[#FFD700] hover:text-black transition-all"
+            className="absolute top-3 right-3 md:hidden z-50 w-9 h-9 rounded-full bg-black/80 border border-[#FFD700]/50 flex items-center justify-center text-white hover:bg-[#FFD700] hover:text-black transition-all shadow-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -312,7 +367,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-center text-2xl md:text-3xl font-bold mt-8"
+            className="text-center text-xl sm:text-2xl md:text-3xl font-bold mt-8 px-2"
             style={{
               background: 'linear-gradient(135deg, #FFD700, #FFA500, #FFD700)',
               WebkitBackgroundClip: 'text',
@@ -366,18 +421,18 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       />
 
                       {/* Content */}
-                      <div className="relative px-6 py-5 border-2 border-[#FFD700]/30 group-hover:border-[#FFD700]/60 rounded-xl transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-start gap-4">
+                      <div className="relative px-3 sm:px-6 py-4 sm:py-5 border-2 border-[#FFD700]/30 group-hover:border-[#FFD700]/60 rounded-xl transition-all duration-300">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-start gap-2 sm:gap-4 flex-1 min-w-0">
                             {/* Icon container */}
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FFD700]/20 to-[#C4A572]/20 flex items-center justify-center group-hover:from-[#FFD700]/30 group-hover:to-[#C4A572]/30 transition-all duration-300">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-[#FFD700]/20 to-[#C4A572]/20 flex items-center justify-center group-hover:from-[#FFD700]/30 group-hover:to-[#C4A572]/30 transition-all duration-300">
                               <span className="text-[#FFD700]">{service.icon}</span>
                             </div>
 
                             {/* Service details */}
-                            <div className="text-left">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-white font-bold text-lg group-hover:text-[#FFD700] transition-colors duration-300">
+                            <div className="text-left flex-1 min-w-0">
+                              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                <h3 className="text-white font-bold text-sm sm:text-lg group-hover:text-[#FFD700] transition-colors duration-300">
                                   {language === 'ar' ? service.nameAr : language === 'he' ? service.nameHe : service.nameEn}
                                 </h3>
                                 {service.popular && (
@@ -391,15 +446,15 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                                   </span>
                                 )}
                               </div>
-                              <p className="text-gray-400 text-sm mt-1">
+                              <p className="text-gray-400 text-xs sm:text-sm mt-1 line-clamp-2">
                                 {language === 'ar' ? service.descAr : language === 'he' ? service.descHe : service.descEn}
                               </p>
-                              <div className="flex items-center gap-4 mt-2">
-                                <span className="flex items-center gap-1 text-[#C4A572] text-sm">
-                                  <Clock className="w-4 h-4" />
+                              <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap">
+                                <span className="flex items-center gap-1 text-[#C4A572] text-xs sm:text-sm">
+                                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                                   {service.duration}
                                 </span>
-                                <span className="text-[#FFD700] font-bold text-lg">
+                                <span className="text-[#FFD700] font-bold text-base sm:text-lg">
                                   {service.price}
                                 </span>
                               </div>
@@ -407,7 +462,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                           </div>
 
                           {/* Arrow icon */}
-                          <ChevronRight className="w-6 h-6 text-[#FFD700] opacity-50 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300" />
+                          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-[#FFD700] opacity-50 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300" />
                         </div>
                       </div>
                     </button>
@@ -662,7 +717,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 </div>
 
                 {/* Contact Form */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Name Field */}
                   <div className="relative group">
                     <label className="block text-[#FFD700] text-sm font-semibold mb-2">
@@ -698,20 +753,32 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       )}
                     </label>
                     <div className="relative">
-                      <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentUser && !customerPhone ? 'text-[#FFD700] animate-pulse' : 'text-[#C4A572]'}`} />
+                      <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentUser && !customerPhone ? 'text-[#FFD700] animate-pulse' : phoneError ? 'text-red-500' : 'text-[#C4A572]'}`} />
                       <input
                         type="tel"
                         value={customerPhone}
-                        onChange={(e) => setCustomerPhone(e.target.value)}
-                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300 ${
-                          currentUser && !customerPhone
+                        onChange={(e) => {
+                          setCustomerPhone(e.target.value);
+                          if (phoneError) validatePhone(e.target.value);
+                        }}
+                        onBlur={() => customerPhone && validatePhone(customerPhone)}
+                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                          phoneError
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                            : currentUser && !customerPhone
                             ? 'border-[#FFD700] ring-2 ring-[#FFD700]/50 shadow-lg shadow-[#FFD700]/30'
-                            : 'border-[#FFD700]/30'
+                            : 'border-[#FFD700]/30 focus:border-[#FFD700] focus:ring-[#FFD700]/20'
                         }`}
-                        placeholder={language === 'ar' ? 'أدخل رقم هاتفك' : language === 'he' ? 'הזן מספר טלפון' : 'Enter your phone number'}
+                        placeholder={language === 'ar' ? 'أدخل رقم هاتفك (9-15 رقم)' : language === 'he' ? 'הזן מספר טלפון (9-15 ספרות)' : 'Enter your phone number (9-15 digits)'}
                         required
                         autoFocus={!!(currentUser && !customerPhone)}
                       />
+                      {phoneError && (
+                        <div className="absolute -bottom-6 left-0 flex items-center gap-1 text-red-500 text-xs">
+                          <AlertCircle className="w-3 h-3" />
+                          {phoneError}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -726,15 +793,29 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       )}
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4A572]" />
+                      <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${emailError ? 'text-red-500' : 'text-[#C4A572]'}`} />
                       <input
                         type="email"
                         value={customerEmail}
-                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        onChange={(e) => {
+                          setCustomerEmail(e.target.value);
+                          if (emailError) validateEmail(e.target.value);
+                        }}
+                        onBlur={() => customerEmail && validateEmail(customerEmail)}
                         disabled={!!currentUser}
-                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-xl text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all duration-300 ${currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`w-full pl-12 pr-4 py-3 bg-black border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                          emailError
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                            : 'border-[#FFD700]/30 focus:border-[#FFD700] focus:ring-[#FFD700]/20'
+                        } ${currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
                         placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : language === 'he' ? 'הזן כתובת דואר אלקטרוני' : 'Enter your email'}
                       />
+                      {emailError && (
+                        <div className="absolute -bottom-6 left-0 flex items-center gap-1 text-red-500 text-xs">
+                          <AlertCircle className="w-3 h-3" />
+                          {emailError}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -766,7 +847,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
                   whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
                   onClick={handleBooking}
-                  disabled={!customerName || !customerPhone || isSubmitting}
+                  disabled={!customerName || !customerPhone || isSubmitting || !!phoneError || !!emailError}
                   className="relative px-12 py-4 font-bold text-black rounded-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />

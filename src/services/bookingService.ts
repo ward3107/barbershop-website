@@ -11,7 +11,7 @@ import {
   serverTimestamp,
   increment
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { getDb } from './firebase';
 
 export interface Booking {
   id?: string;
@@ -53,7 +53,7 @@ export async function createBooking(
 
   try {
     // Add booking to Firestore
-    const docRef = await addDoc(collection(db, 'bookings'), booking);
+    const docRef = await addDoc(collection(getDb(), 'bookings'), booking);
 
     return {
       ...booking,
@@ -71,7 +71,7 @@ export async function createBooking(
  */
 export async function getAllBookings(): Promise<Booking[]> {
   try {
-    const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+    const q = query(collection(getDb(), 'bookings'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
 
     const bookings: Booking[] = [];
@@ -98,7 +98,7 @@ export async function getAllBookings(): Promise<Booking[]> {
 export async function getUserBookings(userId: string): Promise<Booking[]> {
   try {
     const q = query(
-      collection(db, 'bookings'),
+      collection(getDb(), 'bookings'),
       where('userId', '==', userId),
       orderBy('createdAt', 'desc')
     );
@@ -135,7 +135,7 @@ export async function getBookedSlotsForDate(date: Date): Promise<string[]> {
     endOfDay.setHours(23, 59, 59, 999);
 
     const q = query(
-      collection(db, 'bookings'),
+      collection(getDb(), 'bookings'),
       where('date', '>=', startOfDay),
       where('date', '<=', endOfDay),
       where('status', '!=', 'rejected')
@@ -164,10 +164,10 @@ export async function updateBookingStatus(
   status: 'approved' | 'rejected' | 'completed'
 ): Promise<void> {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    const bookingRef = doc(getDb(), 'bookings', bookingId);
 
     // First, get the booking data to check for userId
-    const bookingSnapshot = await getDocs(query(collection(db, 'bookings')));
+    const bookingSnapshot = await getDocs(query(collection(getDb(), 'bookings')));
     let bookingData: any = null;
 
     bookingSnapshot.forEach((docSnap) => {
@@ -194,7 +194,7 @@ export async function updateBookingStatus(
  */
 export async function awardLoyaltyPoints(userId: string, points: number = 10): Promise<void> {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(getDb(), 'users', userId);
     await updateDoc(userRef, {
       loyaltyPoints: increment(points),
       totalBookings: increment(1)
@@ -209,7 +209,7 @@ export async function awardLoyaltyPoints(userId: string, points: number = 10): P
  */
 export async function cancelBooking(bookingId: string): Promise<void> {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    const bookingRef = doc(getDb(), 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'rejected',
       cancelledAt: serverTimestamp(),
@@ -226,7 +226,7 @@ export async function cancelBooking(bookingId: string): Promise<void> {
  */
 export async function deleteBooking(bookingId: string): Promise<void> {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    const bookingRef = doc(getDb(), 'bookings', bookingId);
     await deleteDoc(bookingRef);
   } catch (error) {
     console.error('Error deleting booking:', error);
@@ -243,7 +243,7 @@ export async function rescheduleBooking(
   newTime: string
 ): Promise<void> {
   try {
-    const bookingRef = doc(db, 'bookings', bookingId);
+    const bookingRef = doc(getDb(), 'bookings', bookingId);
     await updateDoc(bookingRef, {
       date: newDate,
       time: newTime,

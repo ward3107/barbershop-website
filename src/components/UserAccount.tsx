@@ -4,7 +4,7 @@ import { X, User, Calendar, Award, LogOut, Clock, CheckCircle, XCircle, Star, Ba
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/services/firebase';
+import { getDb } from '@/services/firebase';
 import { cancelBooking } from '@/services/bookingService';
 
 interface UserAccountProps {
@@ -147,7 +147,7 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
     setLoading(true);
     try {
       const q = query(
-        collection(db, 'bookings'),
+        collection(getDb(), 'bookings'),
         where('userId', '==', currentUser.uid),
         orderBy('createdAt', 'desc')
       );

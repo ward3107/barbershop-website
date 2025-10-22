@@ -137,7 +137,26 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('ar');
+  const [language, setLanguage] = useState<Language>(() => {
+    // Check if user has a saved preference
+    const savedLang = localStorage.getItem('shokha_language');
+    if (savedLang && (savedLang === 'ar' || savedLang === 'en' || savedLang === 'he')) {
+      return savedLang as Language;
+    }
+
+    // Detect browser language
+    const browserLang = navigator.language || (navigator as any).userLanguage;
+    const langCode = browserLang.toLowerCase();
+
+    // Map browser language to supported languages
+    if (langCode.startsWith('ar')) {
+      return 'ar';
+    } else if (langCode.startsWith('he') || langCode.startsWith('iw')) {
+      return 'he';
+    } else {
+      return 'en'; // Default to English for all other languages
+    }
+  });
 
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['ar']] || key;
@@ -146,6 +165,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Update document direction based on language
     document.documentElement.dir = language === 'ar' || language === 'he' ? 'rtl' : 'ltr';
+    // Save language preference
+    localStorage.setItem('shokha_language', language);
   }, [language]);
 
   return (

@@ -19,12 +19,33 @@ interface Booking {
 const MAKE_WEBHOOK_URL = 'YOUR_MAKE_WEBHOOK_URL_HERE';
 
 /**
+ * Get active webhook URL
+ */
+function getWebhookUrl(): string | null {
+  const savedUrl = localStorage.getItem('make_webhook_url');
+  if (savedUrl && savedUrl !== 'YOUR_MAKE_WEBHOOK_URL_HERE') {
+    return savedUrl;
+  }
+  if (MAKE_WEBHOOK_URL !== 'YOUR_MAKE_WEBHOOK_URL_HERE') {
+    return MAKE_WEBHOOK_URL;
+  }
+  return null;
+}
+
+/**
  * Send new booking to Make.com
  * Make.com will then send WhatsApp to owner
  */
 export async function sendBookingToMake(booking: Booking): Promise<boolean> {
   try {
-    const response = await fetch(MAKE_WEBHOOK_URL, {
+    const webhookUrl = getWebhookUrl();
+
+    if (!webhookUrl) {
+      console.warn('⚠️ Make.com webhook not configured - skipping notification');
+      return true; // Return true to not block the booking
+    }
+
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +84,14 @@ export async function sendBookingToMake(booking: Booking): Promise<boolean> {
  */
 export async function sendApprovalToMake(booking: Booking): Promise<boolean> {
   try {
-    const response = await fetch(MAKE_WEBHOOK_URL, {
+    const webhookUrl = getWebhookUrl();
+
+    if (!webhookUrl) {
+      console.warn('⚠️ Make.com webhook not configured - skipping notification');
+      return true;
+    }
+
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,7 +128,14 @@ export async function sendApprovalToMake(booking: Booking): Promise<boolean> {
  */
 export async function sendRejectionToMake(booking: Booking): Promise<boolean> {
   try {
-    const response = await fetch(MAKE_WEBHOOK_URL, {
+    const webhookUrl = getWebhookUrl();
+
+    if (!webhookUrl) {
+      console.warn('⚠️ Make.com webhook not configured - skipping notification');
+      return true;
+    }
+
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
