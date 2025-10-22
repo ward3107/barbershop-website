@@ -128,11 +128,11 @@ export default function ContactFooter() {
           </div>
 
           {/* Quick Links */}
-          <div className="text-center md:text-right md:pr-8">
+          <div className="text-center md:text-left">
             <h4 className="text-lg font-bold text-[#FFD700] mb-4">
               {language === 'ar' ? 'روابط سريعة' : language === 'he' ? 'קישורים מהירים' : 'Quick Links'}
             </h4>
-            <div className="space-y-2 flex flex-col items-center md:items-end">
+            <div className="space-y-2">
               <a
                 href="#home"
                 className="block text-gray-300 hover:text-[#FFD700] transition-colors text-sm"
