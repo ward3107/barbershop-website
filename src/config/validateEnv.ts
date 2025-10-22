@@ -43,6 +43,8 @@ export function validateEnvironment(): void {
     } else if (
       value.includes('YOUR_') ||
       value.includes('your_') ||
+      value.includes('Example') ||
+      value.includes('Replace') ||
       value === 'undefined' ||
       value === 'null'
     ) {
@@ -72,6 +74,9 @@ ${errors.join('\n\n')}
 1. Copy .env.example to .env
 2. Fill in all required values from your Firebase console
 3. Restart the development server
+
+💡 For testing: Demo values are OK as long as they don't contain
+   "YOUR_", "your_", "Example", or "Replace"
 
 For more information, see:
 - FIREBASE_SETUP.md
