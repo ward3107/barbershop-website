@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from './Toast';
 import { createBooking } from './BookingSystem';
 import { sendBookingToMake } from '@/services/makeWebhook';
+import AuthModal from './AuthModal';
 
 interface AppointmentModalProps {
   open: boolean;
@@ -67,6 +68,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   const [recurringCount, setRecurringCount] = useState(4);
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const { t, language } = useLanguage();
   const { currentUser, userProfile } = useAuth();
   const toast = useToast();
@@ -333,7 +335,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="max-w-4xl w-[95vw] sm:w-full bg-black border-2 border-[#FFD700]/50 p-0 overflow-hidden max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onMouseMove={handleMouseMove}
@@ -690,10 +693,69 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
             </>
           ) : step === 'contact' ? (
             <>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-[#FFD700] text-center flex-1">
-                  {language === 'ar' ? 'معلومات الاتصال' : language === 'he' ? 'פרטי יצירת קשר' : 'Contact Information'}
-                </h2>
+              {/* Show auth prompt for non-logged-in users */}
+              {!currentUser ? (
+                <div className="max-w-2xl mx-auto text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-zinc-900 to-black border-2 border-[#FFD700]/30 rounded-2xl p-8"
+                  >
+                    <div className="w-20 h-20 bg-gradient-to-r from-[#FFD700] to-[#C4A572] rounded-full flex items-center justify-center mx-auto mb-6">
+                      <User className="w-10 h-10 text-black" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700] mb-4">
+                      {language === 'ar' ? 'تسجيل الدخول مطلوب' : language === 'he' ? 'נדרש כניסה' : 'Sign In Required'}
+                    </h2>
+                    <p className="text-gray-300 mb-8 text-lg">
+                      {language === 'ar'
+                        ? 'يرجى تسجيل الدخول أو إنشاء حساب لمتابعة الحجز'
+                        : language === 'he'
+                        ? 'אנא התחבר או צור חשבון כדי להמשיך בהזמנה'
+                        : 'Please sign in or create an account to continue booking'}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setAuthModalOpen(true)}
+                        className="relative px-8 py-4 font-bold text-black rounded-xl overflow-hidden group"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                        <span className="relative z-10 flex items-center gap-2 justify-center">
+                          <User className="w-5 h-5" />
+                          {language === 'ar' ? 'تسجيل الدخول / إنشاء حساب' : language === 'he' ? 'התחבר / הירשם' : 'Sign In / Sign Up'}
+                        </span>
+                      </motion.button>
+                    </div>
+                    <p className="text-gray-400 text-sm">
+                      {language === 'ar'
+                        ? '✨ احصل على نقاط ولاء وتتبع حجوزاتك'
+                        : language === 'he'
+                        ? '✨ קבל נקודות נאמנות ועקוב אחר ההזמנות שלך'
+                        : '✨ Earn loyalty points & track your bookings'}
+                    </p>
+                  </motion.div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-8 flex justify-center">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setStep('datetime')}
+                      className="px-8 py-4 bg-zinc-900 border-2 border-[#FFD700]/30 text-[#FFD700] font-semibold rounded-xl hover:border-[#FFD700]/60 hover:bg-[#FFD700]/10 transition-all duration-300"
+                    >
+                      {t('back')}
+                    </motion.button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-2xl font-bold text-[#FFD700] text-center flex-1">
+                      {language === 'ar' ? 'معلومات الاتصال' : language === 'he' ? 'פרטי יצירת קשר' : 'Contact Information'}
+                    </h2>
                 {customerName && (
                   <button
                     onClick={() => {
@@ -894,6 +956,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   </span>
                 </motion.button>
               </div>
+                </>
+              )}
             </>
           ) : null}
         </motion.div>
@@ -930,6 +994,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
           }
         `}</style>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+    </>
   );
 }
