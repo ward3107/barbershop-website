@@ -344,6 +344,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
           {/* Close button - visible on mobile */}
           <button
             onClick={() => handleClose(false)}
+            title="Close"
+            aria-label="Close"
             className="absolute top-3 right-3 md:hidden z-50 w-9 h-9 rounded-full bg-black/80 border border-[#FFD700]/50 flex items-center justify-center text-white hover:bg-[#FFD700] hover:text-black transition-all shadow-lg"
           >
             <X className="w-5 h-5" />
@@ -577,13 +579,25 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                         {/* Frequency */}
                         <div>
                           <label className="block text-gray-400 text-sm mb-2">
-                            {language === 'ar' ? 'التكرار' : language === 'he' ? 'תדירות' : 'Frequency'}
-                          </label>
-                          <select
-                            value={recurringType}
-                            onChange={(e) => setRecurringType(e.target.value as any)}
-                            className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white focus:outline-none focus:border-[#FFD700]"
-                          >
+                            <label
+                              htmlFor="recurringType"
+                              className="block text-gray-400 text-sm mb-2"
+                            >
+                              {language === 'ar' ? 'التكرار' : language === 'he' ? 'תדירות' : 'Frequency'}
+                            </label>
+                            <select
+                              id="recurringType"
+                              aria-label={
+                                language === 'ar'
+                                  ? 'نوع التكرار'
+                                  : language === 'he'
+                                  ? 'סוג תדירות'
+                                  : 'Frequency'
+                              }
+                              value={recurringType}
+                              onChange={(e) => setRecurringType(e.target.value as any)}
+                              className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white focus:outline-none focus:border-[#FFD700]"
+                            >
                             <option value="weekly">
                               {language === 'ar' ? 'أسبوعياً' : language === 'he' ? 'שבועי' : 'Weekly'}
                             </option>
