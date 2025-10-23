@@ -1,65 +1,99 @@
 import { useState, useEffect } from 'react';
 import BookingSystem from './BookingSystem';
-import { Bell, Shield, Settings, LogOut } from 'lucide-react';
+import { Bell, Shield, Settings, LogOut, AlertTriangle, Lock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-// ⚠️ SECURITY WARNING: This is a temporary solution.
-// For production, implement Firebase Authentication with custom claims.
-// See: https://firebase.google.com/docs/auth/admin/custom-claims
-const OWNER_PASSWORD = import.meta.env.VITE_OWNER_PASSWORD || 'shokha2024';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from './Toast';
+import { motion } from 'framer-motion';
 
 export default function OwnerDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const { currentUser, userProfile, isOwner, isAdmin, logout } = useAuth();
   const { language } = useLanguage();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if already authenticated
-    const auth = localStorage.getItem('shokha_owner_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
+  // Owner or Admin can access
+  const hasOwnerAccess = isOwner() || isAdmin();
 
-  const handleLogin = () => {
-    if (password === OWNER_PASSWORD) {
-      setIsAuthenticated(true);
-      localStorage.setItem('shokha_owner_auth', 'true');
-    } else {
-      alert(language === 'ar' ? 'كلمة المرور خاطئة' : language === 'he' ? 'סיסמה שגויה' : 'Wrong password');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success(language === 'ar' ? 'تم تسجيل الخروج بنجاح' : language === 'he' ? 'התנתקת בהצלחה' : 'Logged out successfully');
+    } catch (error) {
+      toast.error(language === 'ar' ? 'خطأ في تسجيل الخروج' : language === 'he' ? 'שגיאה בהתנתקות' : 'Error logging out');
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('shokha_owner_auth');
-  };
-
-  if (!isAuthenticated) {
+  // Check if user is logged in
+  if (!currentUser) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="bg-zinc-900 border-2 border-[#FFD700]/50 rounded-xl p-8 max-w-md w-full">
-          <div className="flex items-center justify-center mb-6">
-            <Shield className="w-12 h-12 text-[#FFD700]" />
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-zinc-900 border-2 border-[#FFD700] rounded-2xl p-8 w-full max-w-md"
+        >
+          <div className="text-center mb-8">
+            <Lock className="w-16 h-16 text-[#FFD700] mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-[#FFD700]">
+              {language === 'ar' ? 'لوحة تحكم المالك' : language === 'he' ? 'לוח בקרה של הבעלים' : 'SHOKHA Owner'}
+            </h1>
+            <p className="text-gray-400 mt-2">
+              {language === 'ar' ? 'يرجى تسجيل الدخول للوصول إلى لوحة التحكم' : language === 'he' ? 'אנא התחבר כדי לגשת ללוח הבקרה' : 'Please log in to access the dashboard'}
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-[#FFD700] text-center mb-6">
-            {language === 'ar' ? 'لوحة تحكم المالك' : language === 'he' ? 'לוח בקרה של הבעלים' : 'Owner Dashboard'}
-          </h1>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-            className="w-full px-4 py-3 bg-black border-2 border-[#FFD700]/30 rounded-lg text-white focus:border-[#FFD700] focus:outline-none"
-            placeholder={language === 'ar' ? 'كلمة المرور' : language === 'he' ? 'סיסמה' : 'Password'}
-          />
+
           <button
-            onClick={handleLogin}
-            className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:from-[#C4A572] hover:to-[#FFD700] transition-all duration-300"
+            onClick={() => window.location.href = '/'}
+            className="w-full px-4 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
           >
-            {language === 'ar' ? 'دخول' : language === 'he' ? 'כניסה' : 'Login'}
+            {language === 'ar' ? 'الذهاب لتسجيل الدخول' : language === 'he' ? 'עבור להתחברות' : 'Go to Login'}
           </button>
-        </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // User is logged in but doesn't have owner access
+  if (!hasOwnerAccess) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-zinc-900 border-2 border-red-500 rounded-2xl p-8 w-full max-w-md"
+        >
+          <div className="text-center mb-8">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-red-500">
+              {language === 'ar' ? 'الوصول مرفوض' : language === 'he' ? 'גישה נדחתה' : 'Access Denied'}
+            </h1>
+            <p className="text-gray-400 mt-2">
+              {language === 'ar'
+                ? 'ليس لديك صلاحيات المالك. اتصل بالمالك لطلب الوصول.'
+                : language === 'he'
+                ? 'אין לך הרשאות בעלים. צור קשר עם הבעלים לבקשת גישה.'
+                : "You don't have owner privileges. Contact the owner to request access."}
+            </p>
+            <p className="text-gray-500 text-sm mt-4">
+              {language === 'ar' ? 'مسجل الدخول كـ:' : language === 'he' ? 'מחובר כ:' : 'Logged in as:'} {userProfile?.email}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all"
+            >
+              {language === 'ar' ? 'تسجيل الخروج' : language === 'he' ? 'התנתק' : 'Logout'}
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="w-full px-4 py-3 bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700 transition-all"
+            >
+              {language === 'ar' ? 'الذهاب للصفحة الرئيسية' : language === 'he' ? 'עבור לדף הבית' : 'Go to Home'}
+            </button>
+          </div>
+        </motion.div>
       </div>
     );
   }

@@ -1,0 +1,150 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+
+    // Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Check if user is accessing their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Get user data from Firestore
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if user has admin role
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+
+    // Check if user has owner role
+    function isOwnerRole() {
+      return isSignedIn() && getUserData().role == 'owner';
+    }
+
+    // Check if user is admin or owner
+    function isAdminOrOwner() {
+      return isAdmin() || isOwnerRole();
+    }
+
+    // ========================================
+    // USERS COLLECTION RULES
+    // ========================================
+    match /users/{userId} {
+      // Users can read their own profile
+      // Admins and owners can read all profiles
+      allow read: if isOwner(userId) || isAdminOrOwner();
+
+      // Users can create their own profile during signup
+      // Must set role to 'user' and cannot set admin/owner role
+      allow create: if isSignedIn() &&
+                      isOwner(userId) &&
+                      request.resource.data.role == 'user' &&
+                      request.resource.data.isAdmin == false &&
+                      request.resource.data.isOwner == false;
+
+      // Users can update their own profile
+      // But CANNOT modify role, isAdmin, or isOwner fields
+      allow update: if isOwner(userId) &&
+                      !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny(['role', 'isAdmin', 'isOwner']);
+
+      // Only owners can update user roles
+      allow update: if isOwnerRole() &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['role', 'isAdmin', 'isOwner']);
+
+      // Prevent deletion of user profiles
+      allow delete: if false;
+    }
+
+    // ========================================
+    // BOOKINGS COLLECTION RULES
+    // ========================================
+    match /bookings/{bookingId} {
+      // Anyone can read their own bookings
+      // Admin and owner can read all bookings
+      allow read: if isSignedIn() &&
+                    (resource.data.userId == request.auth.uid || isAdminOrOwner());
+
+      // List all bookings (for admin/owner dashboard)
+      allow list: if isAdminOrOwner();
+
+      // Any authenticated user can create a booking
+      allow create: if isSignedIn() &&
+                      request.resource.data.status == 'pending';
+
+      // Users can update only their own bookings (for cancellation)
+      // Can only change status to 'rejected' and add cancellation metadata
+      allow update: if isSignedIn() &&
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'rejected' &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['status', 'cancelledAt', 'cancelledBy']);
+
+      // Admin/Owner can update any booking
+      // Can approve, reject, complete, reschedule
+      allow update: if isAdminOrOwner();
+
+      // Only admin/owner can delete bookings
+      allow delete: if isAdminOrOwner();
+    }
+
+    // ========================================
+    // NOTIFICATIONS COLLECTION RULES (Optional)
+    // ========================================
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isOwner(resource.data.userId);
+
+      // System can create notifications (from backend)
+      allow create: if isAdminOrOwner();
+
+      // Users can mark notifications as read
+      allow update: if isOwner(resource.data.userId) &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['read', 'readAt']);
+
+      // Admin/Owner can delete notifications
+      allow delete: if isAdminOrOwner();
+    }
+
+    // ========================================
+    // SERVICES COLLECTION RULES (Read-only for users)
+    // ========================================
+    match /services/{serviceId} {
+      // Anyone can read services
+      allow read: if true;
+
+      // Only owner can manage services
+      allow create, update, delete: if isOwnerRole();
+    }
+
+    // ========================================
+    // BUSINESS SETTINGS COLLECTION (Owner only)
+    // ========================================
+    match /settings/{settingId} {
+      // Anyone can read public settings (hours, contact info)
+      allow read: if true;
+
+      // Only owner can update settings
+      allow create, update, delete: if isOwnerRole();
+    }
+
+    // ========================================
+    // DENY ALL OTHER COLLECTIONS
+    // ========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

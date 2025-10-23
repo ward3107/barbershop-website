@@ -12,13 +12,16 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
+import type { UserRole } from '@/types';
 
 interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   phone?: string;
-  isAdmin: boolean;
+  role?: UserRole;
+  isAdmin: boolean; // Deprecated: use role instead
+  isOwner?: boolean; // New field for owner role
   loyaltyPoints: number;
   totalBookings: number;
   createdAt: any;
@@ -34,6 +37,10 @@ interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
+  // Role checking helpers
+  isAdmin: () => boolean;
+  isOwner: () => boolean;
+  hasRole: (role: UserRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: user.email,
       displayName,
       phone: phone || '',
-      isAdmin: false, // By default, users are not admins
+      role: 'user' as UserRole, // Default role
+      isAdmin: false, // Legacy field
+      isOwner: false,
       loyaltyPoints: 0,
       totalBookings: 0,
       createdAt: serverTimestamp()
@@ -109,7 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: user.email || '',
         displayName: user.displayName || user.email?.split('@')[0] || 'User',
         phone: '',
-        isAdmin: false, // By default, OAuth users are not admins
+        role: 'user' as UserRole, // Default role
+        isAdmin: false, // Legacy field
+        isOwner: false,
         loyaltyPoints: 0,
         totalBookings: 0,
         createdAt: serverTimestamp()
@@ -177,6 +188,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  // Role checking helpers
+  const isAdmin = (): boolean => {
+    if (!userProfile) return false;
+    return userProfile.role === 'admin' || userProfile.isAdmin === true;
+  };
+
+  const isOwner = (): boolean => {
+    if (!userProfile) return false;
+    return userProfile.role === 'owner' || userProfile.isOwner === true;
+  };
+
+  const hasRole = (role: UserRole): boolean => {
+    if (!userProfile) return false;
+    return userProfile.role === role;
+  };
+
   const value: AuthContextType = {
     currentUser,
     userProfile,
@@ -186,7 +213,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginWithGoogle,
     logout,
     resetPassword,
-    updateUserProfile
+    updateUserProfile,
+    isAdmin,
+    isOwner,
+    hasRole
   };
 
   return (

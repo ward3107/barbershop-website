@@ -1,38 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Lock, LogOut, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Lock, LogOut, Trash2, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NotificationManager from './NotificationManager';
 import WhatsAppQuickSender from './WhatsAppQuickSender';
 import { getAllBookings, updateBookingStatus, deleteBooking as deleteBookingFromDB, type Booking } from '@/services/bookingService';
 import { sendApprovalToMake, sendRejectionToMake } from '@/services/makeWebhook';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from './Toast';
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const { currentUser, userProfile, isAdmin, logout } = useAuth();
+  const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [error, setError] = useState('');
 
-  // ⚠️ SECURITY WARNING: This is a temporary solution.
-  // For production, implement Firebase Authentication with custom claims.
-  // See: https://firebase.google.com/docs/auth/admin/custom-claims
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'shokha2025';
+  // Check if user is admin
+  const hasAdminAccess = isAdmin();
 
   useEffect(() => {
-    // Check if already authenticated in this session
-    const auth = sessionStorage.getItem('shokha_admin_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-      loadBookings();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
+    if (hasAdminAccess) {
       loadBookings();
       const interval = setInterval(loadBookings, 5000);
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [hasAdminAccess]);
 
   const loadBookings = async () => {
     try {
@@ -50,22 +40,13 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('shokha_admin_auth', 'true');
-      setError('');
-      loadBookings();
-    } else {
-      setError('Incorrect password');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Error logging out');
     }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('shokha_admin_auth');
-    setPassword('');
   };
 
   const handleApprove = async (booking: Booking) => {
@@ -139,7 +120,8 @@ export default function AdminPage() {
     }
   };
 
-  if (!isAuthenticated) {
+  // Check if user is logged in and has admin access
+  if (!currentUser) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <motion.div
@@ -150,29 +132,54 @@ export default function AdminPage() {
           <div className="text-center mb-8">
             <Lock className="w-16 h-16 text-[#FFD700] mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-[#FFD700]">SHOKHA Admin</h1>
-            <p className="text-gray-400 mt-2">Enter password to access dashboard</p>
+            <p className="text-gray-400 mt-2">Please log in to access the admin dashboard</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700]"
-                autoFocus
-              />
-              {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            </div>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="w-full px-4 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
+          >
+            Go to Login
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
+  // User is logged in but doesn't have admin access
+  if (!hasAdminAccess) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-zinc-900 border-2 border-red-500 rounded-2xl p-8 w-full max-w-md"
+        >
+          <div className="text-center mb-8">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-red-500">Access Denied</h1>
+            <p className="text-gray-400 mt-2">
+              You don't have admin privileges. Contact the owner to request access.
+            </p>
+            <p className="text-gray-500 text-sm mt-4">
+              Logged in as: {userProfile?.email}
+            </p>
+          </div>
+
+          <div className="space-y-3">
             <button
-              type="submit"
-              className="w-full px-4 py-3 bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
+              onClick={handleLogout}
+              className="w-full px-4 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all"
             >
-              Login
+              Logout
             </button>
-          </form>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="w-full px-4 py-3 bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700 transition-all"
+            >
+              Go to Home
+            </button>
+          </div>
         </motion.div>
       </div>
     );

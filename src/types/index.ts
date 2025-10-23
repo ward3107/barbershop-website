@@ -55,6 +55,11 @@ export interface FirestoreBooking {
 }
 
 /**
+ * User Role Types
+ */
+export type UserRole = 'user' | 'admin' | 'owner';
+
+/**
  * User Profile Interface
  */
 export interface UserProfile {
@@ -62,10 +67,15 @@ export interface UserProfile {
   email: string;
   displayName: string;
   phoneNumber?: string;
+  phone?: string;
   photoURL?: string;
   loyaltyPoints?: number;
   totalBookings?: number;
   createdAt: Date;
+  // Role-based access control
+  role?: UserRole;
+  isAdmin?: boolean; // Legacy support - deprecated, use role instead
+  isOwner?: boolean; // Legacy support - deprecated, use role instead
 }
 
 /**
