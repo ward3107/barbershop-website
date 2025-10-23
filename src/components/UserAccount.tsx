@@ -223,7 +223,7 @@ export default function UserAccount({ open, onOpenChange, onRebook }: UserAccoun
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20"
       onClick={() => onOpenChange(false)}
     >
       <motion.div

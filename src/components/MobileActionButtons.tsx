@@ -62,6 +62,7 @@ export default function MobileActionButtons() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.3 }}
             className="absolute bottom-16 right-0 flex flex-col gap-3 mb-2"
           >
             {actions.map((action, index) => (
@@ -70,7 +71,11 @@ export default function MobileActionButtons() {
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{
+                  delay: index * 0.3,
+                  duration: 0.5,
+                  exit: { duration: 0.4 }
+                }}
                 onClick={() => {
                   action.onClick();
                   setIsOpen(false);

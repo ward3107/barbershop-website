@@ -133,7 +133,7 @@ export default function ProfessionalBookingButton({ onClick }: ProfessionalBooki
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-start justify-center p-4 pt-20"
             onClick={() => setShowQuickBooking(false)}
           >
             <motion.div

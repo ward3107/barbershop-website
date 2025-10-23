@@ -263,7 +263,7 @@ export default function RatingSystem() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-20"
               onClick={(e) => e.target === e.currentTarget && setShowReviewForm(false)}
             >
               <motion.div

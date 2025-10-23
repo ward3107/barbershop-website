@@ -718,7 +718,10 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setAuthModalOpen(true)}
+                        onClick={() => {
+                          onOpenChange(false);
+                          setTimeout(() => setAuthModalOpen(true), 100);
+                        }}
                         className="relative px-8 py-4 font-bold text-black rounded-xl overflow-hidden group"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] background-animate" />
