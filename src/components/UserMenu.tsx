@@ -11,6 +11,9 @@ export default function UserMenu() {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
 
   const handleClick = () => {
+    console.log('Button clicked!');
+    console.log('Current User:', currentUser);
+    console.log('User Profile:', userProfile);
     if (currentUser) {
       setAccountModalOpen(true);
     } else {
