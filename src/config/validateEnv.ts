@@ -95,19 +95,21 @@ For more information, see:
     // Don't throw error - allow app to run without Firebase
   }
 
-  // Warn about optional variables
-  const missingOptional = optionalEnvVars.filter(
-    varName => !import.meta.env[varName] || import.meta.env[varName].includes('YOUR_')
-  );
-
-  if (missingOptional.length > 0) {
-    console.warn(
-      `⚠️ Optional environment variables not configured:\n  - ${missingOptional.join('\n  - ')}\n\n` +
-      'Some features may not work. This is OK for development.'
+  // Warn about optional variables (only in development)
+  if (import.meta.env.DEV) {
+    const missingOptional = optionalEnvVars.filter(
+      varName => !import.meta.env[varName] || import.meta.env[varName].includes('YOUR_')
     );
-  }
 
-  console.log('✅ Environment variables validated successfully');
+    if (missingOptional.length > 0) {
+      console.warn(
+        `⚠️ Optional environment variables not configured:\n  - ${missingOptional.join('\n  - ')}\n\n` +
+        'Some features may not work. This is OK for development.'
+      );
+    }
+
+    console.log('✅ Environment variables validated successfully');
+  }
 }
 
 /**

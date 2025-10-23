@@ -30,13 +30,17 @@ if (isFirebaseConfigured) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
-    console.log('✅ Firebase initialized successfully');
+    if (import.meta.env.DEV) {
+      console.log('✅ Firebase initialized successfully');
+    }
   } catch (error) {
     console.warn('⚠️ Firebase initialization failed:', error);
   }
 } else {
-  console.warn('⚠️ Firebase not configured - Authentication features will be disabled');
-  console.warn('To enable Firebase, create a .env file with your Firebase credentials');
+  if (import.meta.env.DEV) {
+    console.warn('⚠️ Firebase not configured - Authentication features will be disabled');
+    console.warn('To enable Firebase, create a .env file with your Firebase credentials');
+  }
 }
 
 // Helper function to get db with type assertion
