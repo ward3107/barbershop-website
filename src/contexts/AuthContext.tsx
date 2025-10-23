@@ -7,7 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
@@ -31,6 +32,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -126,6 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(null);
   }
 
+  // Reset password function
+  async function resetPassword(email: string) {
+    if (!isFirebaseAvailable || !auth) {
+      throw new Error('Firebase is not configured. Please set up Firebase credentials.');
+    }
+    await sendPasswordResetEmail(auth, email);
+  }
+
   // Load user profile from Firestore
   async function loadUserProfile(uid: string) {
     if (!isFirebaseAvailable || !db) return;
@@ -175,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     loginWithGoogle,
     logout,
+    resetPassword,
     updateUserProfile
   };
 

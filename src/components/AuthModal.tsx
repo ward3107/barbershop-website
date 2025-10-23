@@ -12,14 +12,16 @@ interface AuthModalProps {
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, signup, loginWithGoogle, currentUser, userProfile } = useAuth();
+  const { login, signup, loginWithGoogle, resetPassword, currentUser, userProfile } = useAuth();
   const { language } = useLanguage();
 
   const texts = {
@@ -38,6 +40,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       microsoftLogin: 'Continue with Microsoft',
       switchToSignup: "Don't have an account? Sign up",
       switchToLogin: 'Already have an account? Login',
+      forgotPassword: 'Forgot Password?',
+      resetPassword: 'Reset Password',
+      resetPasswordButton: 'Send Reset Link',
+      resetPasswordDesc: "Enter your email and we'll send you a link to reset your password",
+      backToLogin: 'Back to Login',
+      resetEmailSent: 'Password reset email sent! Check your inbox.',
       errorTitle: 'Error',
       successTitle: 'Success!',
       loginSuccess: 'Welcome back!',
@@ -60,6 +68,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       microsoftLogin: 'المتابعة مع مايكروسوفت',
       switchToSignup: 'ليس لديك حساب؟ سجل الآن',
       switchToLogin: 'لديك حساب بالفعل؟ سجل الدخول',
+      forgotPassword: 'نسيت كلمة المرور؟',
+      resetPassword: 'إعادة تعيين كلمة المرور',
+      resetPasswordButton: 'إرسال رابط إعادة التعيين',
+      resetPasswordDesc: 'أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور',
+      backToLogin: 'العودة لتسجيل الدخول',
+      resetEmailSent: 'تم إرسال بريد إعادة تعيين كلمة المرور! تحقق من بريدك الوارد.',
       errorTitle: 'خطأ',
       successTitle: 'نجح!',
       loginSuccess: 'مرحباً بعودتك!',
@@ -82,6 +96,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       microsoftLogin: 'המשך עם Microsoft',
       switchToSignup: 'אין לך חשבון? הירשם',
       switchToLogin: 'כבר יש לך חשבון? התחבר',
+      forgotPassword: 'שכחת סיסמה?',
+      resetPassword: 'איפוס סיסמה',
+      resetPasswordButton: 'שלח קישור לאיפוס',
+      resetPasswordDesc: 'הזן את האימייל שלך ונשלח לך קישור לאיפוס הסיסמה',
+      backToLogin: 'חזרה להתחברות',
+      resetEmailSent: 'נשלח אימייל לאיפוס סיסמה! בדוק את תיבת הדואר שלך.',
       errorTitle: 'שגיאה',
       successTitle: 'הצלחה!',
       loginSuccess: 'ברוך שובך!',
@@ -161,6 +181,22 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      await resetPassword(email);
+      setSuccess(text.resetEmailSent);
+      setEmail('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setEmail('');
@@ -168,6 +204,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     setDisplayName('');
     setPhone('');
     setError('');
+    setSuccess('');
+    setIsForgotPassword(false);
   };
 
   const toggleMode = () => {
@@ -232,8 +270,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 {/* Header */}
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-[#FFD700] mb-2">
-                    {isLogin ? text.login : text.signup}
+                    {isForgotPassword ? text.resetPassword : isLogin ? text.login : text.signup}
                   </h2>
+                  {isForgotPassword && (
+                    <p className="text-gray-400 text-sm mt-2">{text.resetPasswordDesc}</p>
+                  )}
                 </div>
 
                 {/* Error Message */}
@@ -247,9 +288,20 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </motion.div>
             )}
 
+                {/* Success Message */}
+                {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 mb-4 text-green-400 text-sm"
+              >
+                {success}
+              </motion.div>
+            )}
+
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
+            <form onSubmit={isForgotPassword ? handleResetPassword : handleSubmit} className="space-y-4">
+              {!isLogin && !isForgotPassword && (
                 <div>
                   <label className="block text-gray-300 text-sm font-medium mb-2">
                     {text.name}
@@ -262,7 +314,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       onChange={(e) => setDisplayName(e.target.value)}
                       className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
                       placeholder={text.name}
-                      required={!isLogin}
+                      required={!isLogin && !isForgotPassword}
                     />
                   </div>
                 </div>
@@ -285,28 +337,44 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-gray-300 text-sm font-medium mb-2">
-                  {text.password}
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                    placeholder={text.password}
-                    autoComplete={isLogin ? "current-password" : "new-password"}
-                    required
-                    minLength={8}
-                  />
+              {!isForgotPassword && (
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    {text.password}
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                      placeholder={text.password}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                  {/* Show password strength indicator for signup */}
+                  {!isLogin && <PasswordStrength password={password} show={true} />}
+                  {/* Forgot Password Link */}
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setError('');
+                        setSuccess('');
+                      }}
+                      className="text-[#FFD700] hover:text-[#C4A572] text-sm mt-2 transition-colors"
+                    >
+                      {text.forgotPassword}
+                    </button>
+                  )}
                 </div>
-                {/* Show password strength indicator for signup */}
-                {!isLogin && <PasswordStrength password={password} show={true} />}
-              </div>
+              )}
 
-              {!isLogin && (
+              {!isLogin && !isForgotPassword && (
                 <div>
                   <label className="block text-gray-300 text-sm font-medium mb-2">
                     {text.phone}
@@ -337,27 +405,48 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     <span>Loading...</span>
                   </div>
+                ) : isForgotPassword ? (
+                  text.resetPasswordButton
                 ) : (
                   isLogin ? text.loginButton : text.signupButton
                 )}
               </motion.button>
+
+              {/* Back to Login Button (only in forgot password mode) */}
+              {isForgotPassword && (
+                <motion.button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setError('');
+                    setSuccess('');
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full text-[#FFD700] hover:text-[#C4A572] font-medium py-3 transition-colors mt-2"
+                >
+                  {text.backToLogin}
+                </motion.button>
+              )}
             </form>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-[#FFD700]/30" />
-              <span className="text-gray-400 text-sm">OR</span>
-              <div className="flex-1 h-px bg-[#FFD700]/30" />
-            </div>
+            {/* Divider (hide in forgot password mode) */}
+            {!isForgotPassword && (
+              <>
+                <div className="flex items-center gap-4 my-6">
+                  <div className="flex-1 h-px bg-[#FFD700]/30" />
+                  <span className="text-gray-400 text-sm">OR</span>
+                  <div className="flex-1 h-px bg-[#FFD700]/30" />
+                </div>
 
-            {/* Google Login */}
-            <motion.button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-white text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-white/50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+                {/* Google Login */}
+                <motion.button
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-white text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-white/50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -386,6 +475,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             >
               {isLogin ? text.switchToSignup : text.switchToLogin}
             </button>
+              </>
+            )}
               </>
             )}
           </div>
