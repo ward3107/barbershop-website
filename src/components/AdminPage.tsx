@@ -12,8 +12,10 @@ export default function AdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [error, setError] = useState('');
 
-  // Simple password (you can change this)
-  const ADMIN_PASSWORD = 'shokha2025';
+  // ⚠️ SECURITY WARNING: This is a temporary solution.
+  // For production, implement Firebase Authentication with custom claims.
+  // See: https://firebase.google.com/docs/auth/admin/custom-claims
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'shokha2025';
 
   useEffect(() => {
     // Check if already authenticated in this session

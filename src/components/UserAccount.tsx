@@ -6,21 +6,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { getDb } from '@/services/firebase';
 import { cancelBooking } from '@/services/bookingService';
+import type { Booking } from '@/types';
 
 interface UserAccountProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRebook?: (booking: any) => void;
-}
-
-interface Booking {
-  id: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: Date;
-  notes?: string;
 }
 
 export default function UserAccount({ open, onOpenChange, onRebook }: UserAccountProps) {

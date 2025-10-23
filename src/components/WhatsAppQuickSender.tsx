@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageSquare, Send, CheckCircle, XCircle, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface Booking {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
+import type { Booking } from '@/types';
 
 export default function WhatsAppQuickSender() {
   const [bookings, setBookings] = useState<Booking[]>([]);

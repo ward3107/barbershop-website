@@ -1,6 +1,9 @@
 // Notification Service for SHOKHA Barbershop
 // This service handles sending notifications to the owner and customers
 
+import type { Booking, BookingStatus } from '@/types';
+import { getStorageItem, setStorageItem } from '@/utils/storage';
+
 interface NotificationConfig {
   // WhatsApp Business API (Recommended)
   whatsappApiUrl?: string;
@@ -36,7 +39,7 @@ const config: NotificationConfig = {
 };
 
 // 1. WHATSAPP NOTIFICATION (Most Recommended for Israel/Palestine)
-export async function sendWhatsAppToOwner(booking: any) {
+export async function sendWhatsAppToOwner(booking: Booking) {
   const message = `
 🔔 *New Booking Request*
 👤 Customer: ${booking.customerName}
@@ -77,7 +80,7 @@ ${window.location.origin}/admin
 }
 
 // 2. EMAIL NOTIFICATION (Using EmailJS - Easy Setup)
-export async function sendEmailToOwner(booking: any) {
+export async function sendEmailToOwner(booking: Booking) {
   // EmailJS requires: npm install @emailjs/browser
   try {
     // Skip if EmailJS not configured
@@ -131,7 +134,7 @@ Time: ${booking.time}
 }
 
 // 3. SMS NOTIFICATION (Using Twilio - Costs money)
-export async function sendSMSToOwner(booking: any) {
+export async function sendSMSToOwner(booking: Booking) {
   const message = `New SHOKHA booking:
 ${booking.customerName}
 ${booking.customerPhone}
@@ -159,7 +162,7 @@ ${booking.date.toLocaleDateString()} ${booking.time}`;
 }
 
 // 4. TELEGRAM BOT (Free and Easy)
-export async function sendTelegramToOwner(booking: any) {
+export async function sendTelegramToOwner(booking: Booking) {
   // First create a Telegram bot using @BotFather
   const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
   const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '';
@@ -197,7 +200,7 @@ Use /approve_${booking.id} or /reject_${booking.id}
 }
 
 // 5. PUSH NOTIFICATIONS (Using Firebase Cloud Messaging)
-export async function sendPushNotification(_booking: any) {
+export async function sendPushNotification(_booking: Booking) {
   // ⚠️ SECURITY WARNING: FCM server key should be on backend only!
   // This functionality has been disabled for security reasons.
   // To implement push notifications securely, use Firebase Admin SDK on your backend.
@@ -206,7 +209,7 @@ export async function sendPushNotification(_booking: any) {
 }
 
 // Main function to notify owner (uses multiple methods)
-export async function notifyOwnerOfNewBooking(booking: any) {
+export async function notifyOwnerOfNewBooking(booking: Booking) {
   console.log('📱 Notifying owner of new booking:', booking);
   console.log('📞 Owner WhatsApp configured:', config.ownerWhatsapp);
 
@@ -238,9 +241,9 @@ export async function notifyOwnerOfNewBooking(booking: any) {
     }
 
     // Store in localStorage for owner dashboard
-    const pendingBookings = JSON.parse(localStorage.getItem('shokha_pending_bookings') || '[]');
+    const pendingBookings = getStorageItem<Booking[]>('shokha_pending_bookings', []);
     pendingBookings.push(booking);
-    localStorage.setItem('shokha_pending_bookings', JSON.stringify(pendingBookings));
+    setStorageItem('shokha_pending_bookings', pendingBookings);
 
   } catch (error) {
     console.error('Error notifying owner:', error);
@@ -248,7 +251,7 @@ export async function notifyOwnerOfNewBooking(booking: any) {
 }
 
 // Customer notification when booking is approved/rejected
-export async function notifyCustomer(booking: any, status: 'approved' | 'rejected') {
+export async function notifyCustomer(booking: Booking, status: BookingStatus) {
   const message = status === 'approved'
     ? `✅ Your booking at SHOKHA is confirmed!\n📅 ${booking.date.toLocaleDateString()}\n⏰ ${booking.time}\n📱 Add to calendar: ${generateCalendarLink(booking)}`
     : `❌ Sorry, your requested time is not available. Please book another time.`;
@@ -264,7 +267,7 @@ export async function notifyCustomer(booking: any, status: 'approved' | 'rejecte
 }
 
 // Helper function to generate calendar link
-function generateCalendarLink(booking: any) {
+function generateCalendarLink(booking: Booking) {
   const startDate = new Date(booking.date);
   const [hours, minutes] = booking.time.split(':');
   startDate.setHours(parseInt(hours), parseInt(minutes));

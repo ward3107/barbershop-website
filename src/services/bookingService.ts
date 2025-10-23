@@ -12,20 +12,10 @@ import {
   increment
 } from 'firebase/firestore';
 import { getDb } from './firebase';
+import type { Booking, BookingStatus } from '@/types';
 
-export interface Booking {
-  id?: string;
-  userId?: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
-  createdAt: Date | any;
-  notes?: string;
-}
+// Re-export for backward compatibility
+export type { Booking, BookingStatus };
 
 /**
  * Create a new booking in Firestore

@@ -6,20 +6,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { sendCustomerApproval, sendCustomerRejection } from '@/services/twilioService';
-
-// Types
-interface Booking {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: Date;
-  notes?: string;
-}
+import type { Booking } from '@/types';
 
 interface BookingSystemProps {
   isOwner?: boolean;

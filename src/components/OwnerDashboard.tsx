@@ -3,8 +3,10 @@ import BookingSystem from './BookingSystem';
 import { Bell, Shield, Settings, LogOut } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Simple password protection
-const OWNER_PASSWORD = 'shokha2024'; // Change this!
+// ⚠️ SECURITY WARNING: This is a temporary solution.
+// For production, implement Firebase Authentication with custom claims.
+// See: https://firebase.google.com/docs/auth/admin/custom-claims
+const OWNER_PASSWORD = import.meta.env.VITE_OWNER_PASSWORD || 'shokha2024';
 
 export default function OwnerDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

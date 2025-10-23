@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from './Toast';
-import { createBooking } from './BookingSystem';
+import { createBooking } from '@/services/bookingService';
 import { sendBookingToMake } from '@/services/makeWebhook';
 import AuthModal from './AuthModal';
 

@@ -14,15 +14,7 @@
 // Body: { bookingId, customerPhone, message }
 // ========================================
 
-interface Booking {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  service: string;
-  date: Date;
-  time: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
+import type { Booking } from '@/types';
 
 // REMOVED: sendWhatsAppMessage function (security fix)
 // This function has been removed because it exposed Twilio credentials in the frontend.
