@@ -12,7 +12,7 @@ export default function InstallAppPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
   const translations = {
     en: {
