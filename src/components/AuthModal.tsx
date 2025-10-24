@@ -330,10 +330,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                    className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-11 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
                     placeholder={text.email}
                     required
                   />
+                  {email && (
+                    <button
+                      type="button"
+                      onClick={() => setEmail('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FFD700] transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -348,12 +357,21 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                      className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-11 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
                       placeholder={text.password}
                       autoComplete={isLogin ? "current-password" : "new-password"}
                       required
                       minLength={8}
                     />
+                    {password && (
+                      <button
+                        type="button"
+                        onClick={() => setPassword('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FFD700] transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                   {/* Show password strength indicator for signup */}
                   {!isLogin && <PasswordStrength password={password} show={true} />}
