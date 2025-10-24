@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, getAuthErrorMessage } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import PasswordStrength, { validatePassword } from './PasswordStrength';
 
@@ -160,7 +160,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       onOpenChange(false);
       resetForm();
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(getAuthErrorMessage(err, language));
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       onOpenChange(false);
       resetForm();
     } catch (err: any) {
-      setError(err.message || 'Google login failed');
+      setError(getAuthErrorMessage(err, language));
     } finally {
       setLoading(false);
     }
@@ -192,7 +192,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setSuccess(text.resetEmailSent);
       setEmail('');
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email');
+      setError(getAuthErrorMessage(err, language));
     } finally {
       setLoading(false);
     }

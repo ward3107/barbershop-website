@@ -8,10 +8,89 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  AuthError
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
+
+// Helper function to get user-friendly error messages
+export function getAuthErrorMessage(error: any, language: string = 'en'): string {
+  const errorCode = error?.code || '';
+
+  const errorMessages: Record<string, Record<string, string>> = {
+    'auth/email-already-in-use': {
+      en: 'This email is already registered. Please login or use a different email.',
+      ar: 'هذا البريد الإلكتروني مسجل بالفعل. الرجاء تسجيل الدخول أو استخدام بريد إلكتروني مختلف.',
+      he: 'אימייל זה כבר רשום. אנא התחבר או השתמש באימייל אחר.'
+    },
+    'auth/weak-password': {
+      en: 'Password is too weak. Please use at least 6 characters.',
+      ar: 'كلمة المرور ضعيفة جداً. الرجاء استخدام 6 أحرف على الأقل.',
+      he: 'הסיסמה חלשה מדי. אנא השתמש לפחות ב-6 תווים.'
+    },
+    'auth/invalid-email': {
+      en: 'Invalid email address. Please check and try again.',
+      ar: 'عنوان البريد الإلكتروني غير صالح. الرجاء التحقق والمحاولة مرة أخرى.',
+      he: 'כתובת אימייל לא חוקית. אנא בדוק ונסה שוב.'
+    },
+    'auth/user-not-found': {
+      en: 'No account found with this email. Please sign up first.',
+      ar: 'لم يتم العثور على حساب بهذا البريد الإلكتروني. الرجاء التسجيل أولاً.',
+      he: 'לא נמצא חשבון עם אימייל זה. אנא הירשם תחילה.'
+    },
+    'auth/wrong-password': {
+      en: 'Incorrect password. Please try again.',
+      ar: 'كلمة المرور غير صحيحة. الرجاء المحاولة مرة أخرى.',
+      he: 'סיסמה שגויה. אנא נסה שוב.'
+    },
+    'auth/invalid-credential': {
+      en: 'Invalid email or password. Please check your credentials.',
+      ar: 'البريد الإلكتروني أو كلمة المرور غير صحيحة. الرجاء التحقق من بياناتك.',
+      he: 'אימייל או סיסמה שגויים. אנא בדוק את פרטי ההתחברות שלך.'
+    },
+    'auth/too-many-requests': {
+      en: 'Too many failed attempts. Please try again later.',
+      ar: 'محاولات فاشلة كثيرة جداً. الرجاء المحاولة لاحقاً.',
+      he: 'יותר מדי ניסיונות כושלים. אנא נסה שוב מאוחר יותר.'
+    },
+    'auth/network-request-failed': {
+      en: 'Network error. Please check your connection and try again.',
+      ar: 'خطأ في الشبكة. الرجاء التحقق من الاتصال والمحاولة مرة أخرى.',
+      he: 'שגיאת רשת. אנא בדוק את החיבור שלך ונסה שוב.'
+    },
+    'auth/popup-closed-by-user': {
+      en: 'Sign-in popup was closed. Please try again.',
+      ar: 'تم إغلاق نافذة تسجيل الدخول. الرجاء المحاولة مرة أخرى.',
+      he: 'חלון ההתחברות נסגר. אנא נסה שוב.'
+    },
+    'auth/user-disabled': {
+      en: 'This account has been disabled. Please contact support.',
+      ar: 'تم تعطيل هذا الحساب. الرجاء الاتصال بالدعم.',
+      he: 'חשבון זה הושבת. אנא צור קשר עם התמיכה.'
+    },
+    'auth/requires-recent-login': {
+      en: 'Please log in again to complete this action.',
+      ar: 'الرجاء تسجيل الدخول مرة أخرى لإكمال هذا الإجراء.',
+      he: 'אנא התחבר שוב כדי להשלים פעולה זו.'
+    }
+  };
+
+  // Get the error message for the specific error code and language
+  const message = errorMessages[errorCode]?.[language];
+
+  // If no specific message found, return a generic error
+  if (!message) {
+    const genericMessages: Record<string, string> = {
+      en: 'An error occurred. Please try again.',
+      ar: 'حدث خطأ. الرجاء المحاولة مرة أخرى.',
+      he: 'אירעה שגיאה. אנא נסה שוב.'
+    };
+    return genericMessages[language] || genericMessages.en;
+  }
+
+  return message;
+}
 
 interface UserProfile {
   uid: string;
