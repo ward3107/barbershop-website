@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() &&
+             firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Gallery images - admins can upload, everyone can read
+    match /gallery/{imageFile} {
+      // Anyone can read gallery images
+      allow read: if true;
+
+      // Only admins can upload or delete
+      allow create, delete: if isAdmin();
+
+      // Validate image upload size (max 10MB) and type
+      allow create: if request.resource.size < 10 * 1024 * 1024 &&
+                       request.resource.contentType.matches('image/.*');
+    }
+
+    // Profile pictures
+    match /users/{userId}/profile/{imageFile} {
+      // Users can read and write their own profile pictures
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+
+      // Admins can read all profile pictures
+      allow read: if isAdmin();
+
+      // Validate image upload size (max 5MB) and type
+      allow write: if request.resource.size < 5 * 1024 * 1024 &&
+                      request.resource.contentType.matches('image/.*');
+    }
+  }
+}
