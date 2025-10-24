@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shokha.vercel.app/sitemap.xml
