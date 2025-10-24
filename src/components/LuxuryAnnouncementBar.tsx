@@ -138,23 +138,23 @@ export default function LuxuryAnnouncementBar() {
 
         <div className="relative flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-8 py-4 md:py-6 gap-3 md:gap-0">
 
-          {/* Left side - Luxury branding - Hidden on mobile */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Left side - Luxury branding */}
+          <div className="flex items-center gap-2 md:gap-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FFD700] to-[#C4A572] p-[2px]">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[#FFD700] to-[#C4A572] p-[2px]">
                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                  <Crown className="w-6 h-6 text-[#FFD700]" />
+                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-[#FFD700]" />
                 </div>
               </div>
               {/* Pulse effect */}
-              <div className="absolute inset-0 rounded-full bg-[#FFD700]/20 animate-ping" />
+              <div className="absolute inset-0 rounded-full bg-[#FFD700]/20 animate-ping pointer-events-none" />
             </div>
 
-            <div>
-              <p className="text-[#FFD700] text-sm font-bold tracking-wider">
+            <div className="hidden sm:block">
+              <p className="text-[#FFD700] text-xs md:text-sm font-bold tracking-wider">
                 SHOKHA
               </p>
-              <p className="text-[#C4A572] text-[10px] tracking-[0.3em] uppercase">
+              <p className="text-[#C4A572] text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase">
                 Barber Shop
               </p>
             </div>

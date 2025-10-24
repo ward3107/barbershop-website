@@ -154,7 +154,8 @@ export default function NotificationManager() {
 
   return (
     <>
-      <div className="fixed bottom-4 left-4 z-40">
+      {/* Hide on mobile devices (md: medium screens and up) */}
+      <div className="hidden md:block fixed bottom-4 left-4 z-40">
         {/* Notification Permission Button */}
         {permission !== 'granted' && (
           <motion.button

@@ -123,7 +123,7 @@ export default function AccessibilityMenu() {
         <Button
           size="icon"
           className={`fixed bottom-16 left-4 z-50 h-12 w-12 rounded-full bg-[#C4A572] hover:bg-[#D4B582] text-black shadow-lg transition-all duration-300 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+            isVisible ? 'opacity-60 translate-y-0 hover:opacity-90' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
         >
           <Accessibility className="h-6 w-6" />

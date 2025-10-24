@@ -1,6 +1,7 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 // Firebase configuration
 // IMPORTANT: Replace these with your actual Firebase project credentials
@@ -23,6 +24,7 @@ const isFirebaseConfigured = firebaseConfig.apiKey &&
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
 
 // Initialize Firebase only if configured
 if (isFirebaseConfigured) {
@@ -30,6 +32,7 @@ if (isFirebaseConfigured) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     if (import.meta.env.DEV) {
       console.log('✅ Firebase initialized successfully');
     }
@@ -59,5 +62,13 @@ export function getAuthInstance(): Auth {
   return auth;
 }
 
-export { auth, db };
+// Helper function to get storage with type assertion
+export function getStorageInstance(): FirebaseStorage {
+  if (!storage) {
+    throw new Error('Storage is not initialized. Please configure Firebase.');
+  }
+  return storage;
+}
+
+export { auth, db, storage };
 export default app;

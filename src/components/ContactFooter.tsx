@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Mail, Phone, MapPin, Clock, Scissors } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AdminLoginModal from './AdminLoginModal';
 
 export default function ContactFooter() {
   const { language } = useLanguage();
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
 
   const contactInfo = {
     instagram: 'https://www.instagram.com/shokha_barber_shop?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
@@ -151,12 +154,13 @@ export default function ContactFooter() {
               >
                 {language === 'ar' ? 'التقييمات' : language === 'he' ? 'ביקורות' : 'Reviews'}
               </a>
-              <a
-                href="#admin"
-                className="block text-gray-300 hover:text-[#FFD700] transition-colors text-sm opacity-50 hover:opacity-100"
+              <button
+                onClick={() => setAdminModalOpen(true)}
+                className="block text-gray-300 hover:text-[#FFD700] transition-colors text-sm w-full text-left"
+                title="Admin Access"
               >
                 {language === 'ar' ? 'لوحة التحكم' : language === 'he' ? 'ניהול' : 'Admin'}
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -170,6 +174,9 @@ export default function ContactFooter() {
           </div>
         </div>
       </div>
+
+      {/* Admin Login Popup Modal */}
+      <AdminLoginModal open={adminModalOpen} onOpenChange={setAdminModalOpen} />
     </footer>
   );
 }

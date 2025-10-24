@@ -80,7 +80,7 @@ export default function MobileActionButtons() {
                   action.onClick();
                   setIsOpen(false);
                 }}
-                className={`group relative bg-gradient-to-r ${action.color} text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-3 pr-4 pl-4 py-3`}
+                className={`group relative bg-gradient-to-r ${action.color} text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-3 pr-4 pl-4 py-3 opacity-60 hover:opacity-90`}
               >
                 <span className="flex items-center justify-center w-10 h-10">
                   {action.icon}
@@ -102,7 +102,7 @@ export default function MobileActionButtons() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-14 h-14 bg-gradient-to-br from-[#FFD700] to-[#C4A572] text-black rounded-full shadow-xl hover:shadow-2xl hover:shadow-[#FFD700]/50 transition-all flex items-center justify-center"
+        className="relative w-14 h-14 bg-gradient-to-br from-[#FFD700] to-[#C4A572] text-black rounded-full shadow-xl hover:shadow-2xl hover:shadow-[#FFD700]/50 transition-all flex items-center justify-center opacity-60 hover:opacity-90"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
