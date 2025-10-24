@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, LogOut, Trash2, CheckCircle, XCircle, Clock, Users, BarChart3, Image, Megaphone, Calendar, MessageCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Lock, LogOut, Trash2, CheckCircle, XCircle, Clock, Users, BarChart3, Image, Megaphone, Calendar, MessageCircle, DollarSign, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NotificationManager from './NotificationManager';
 import WhatsAppQuickSender from './WhatsAppQuickSender';
@@ -12,6 +12,7 @@ type TabType = 'bookings' | 'customers' | 'analytics' | 'gallery' | 'announcemen
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('bookings');
@@ -260,14 +261,28 @@ export default function AdminPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t.password}
-                className="w-full px-4 py-3 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700]"
-                autoFocus
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.password}
+                  className="w-full px-4 py-3 pr-12 bg-black border border-[#C4A572] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700]"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FFD700] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {error && <p className="text-red-500 text-sm mt-2">{t.incorrectPassword}</p>}
             </div>
 

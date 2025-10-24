@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User, Phone } from 'lucide-react';
+import { X, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth, getAuthErrorMessage } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import PasswordStrength, { validatePassword } from './PasswordStrength';
@@ -15,6 +15,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -354,7 +355,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full bg-black/50 border border-[#FFD700]/30 rounded-lg py-3 pl-11 pr-11 text-white placeholder-gray-500 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
@@ -363,15 +364,18 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       required
                       minLength={8}
                     />
-                    {password && (
-                      <button
-                        type="button"
-                        onClick={() => setPassword('')}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FFD700] transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FFD700] transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                   {/* Show password strength indicator for signup */}
                   {!isLogin && <PasswordStrength password={password} show={true} />}
