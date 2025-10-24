@@ -65,12 +65,12 @@ export default function InstallAppPrompt() {
       return;
     }
 
-    // Check if user previously dismissed the prompt (within 7 days)
+    // Check if user previously dismissed the prompt (within 3 days)
     const dismissedTime = localStorage.getItem('pwa_install_dismissed');
     if (dismissedTime) {
       const daysSinceDismissed = (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        return; // Don't show again within 7 days
+      if (daysSinceDismissed < 3) {
+        return; // Don't show again within 3 days
       }
     }
 
@@ -79,10 +79,10 @@ export default function InstallAppPrompt() {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
 
-      // Show prompt after 5 seconds on the page
+      // Show prompt immediately after 2 seconds on the page
       setTimeout(() => {
         setShowPrompt(true);
-      }, 5000);
+      }, 2000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
