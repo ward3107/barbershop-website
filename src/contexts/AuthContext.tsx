@@ -8,8 +8,7 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail,
-  AuthError
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
