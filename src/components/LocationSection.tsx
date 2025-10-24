@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { MapPin, Navigation, Phone, Instagram } from 'lucide-react';
+import { MapPin, Phone, Instagram } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LocationSection() {
@@ -99,19 +99,6 @@ export default function LocationSection() {
                 />
               </div>
             </div>
-
-            {/* Get Directions Button */}
-            <motion.a
-              href={contactInfo.directionsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-4 w-full bg-gradient-to-r from-[#FFD700] to-[#C4A572] text-black font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-[#FFD700]/50 transition-all"
-            >
-              <Navigation className="w-5 h-5" />
-              {text.getDirections}
-            </motion.a>
           </motion.div>
 
           {/* Contact Info Cards */}
@@ -133,15 +120,6 @@ export default function LocationSection() {
                   <p className="text-gray-300 text-lg">
                     {contactInfo.address[language as keyof typeof contactInfo.address]}
                   </p>
-                  <a
-                    href={contactInfo.directionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-[#FFD700] hover:text-[#C4A572] transition-colors mt-2 text-sm"
-                  >
-                    <Navigation className="w-4 h-4" />
-                    {text.openMap}
-                  </a>
                 </div>
               </div>
             </div>
