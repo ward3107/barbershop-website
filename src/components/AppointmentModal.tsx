@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from './Toast';
-import { createBooking } from './BookingSystem';
+import { createBooking, getBookedSlotsForDate } from '@/services/bookingService';
 import { sendBookingToMake } from '@/services/makeWebhook';
 import AuthModal from './AuthModal';
 
@@ -117,31 +117,15 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
     }
   }, [open, currentUser, userProfile]);
 
-  // Load booked time slots for the selected date
+  // Load booked time slots for the selected date from Firestore
   useEffect(() => {
     if (date) {
-      const stored = localStorage.getItem('shokha_bookings');
-      if (stored) {
-        try {
-          const bookings = JSON.parse(stored);
-          const selectedDateStr = date.toDateString();
-
-          // Find all bookings for the selected date that are not rejected
-          const bookedTimes = bookings
-            .filter((booking: any) => {
-              const bookingDate = new Date(booking.date);
-              return bookingDate.toDateString() === selectedDateStr &&
-                     booking.status !== 'rejected';
-            })
-            .map((booking: any) => booking.time);
-
-          setBookedSlots(bookedTimes);
-        } catch (error) {
+      getBookedSlotsForDate(date)
+        .then(slots => setBookedSlots(slots))
+        .catch(error => {
           console.error('Error loading booked slots:', error);
-        }
-      } else {
-        setBookedSlots([]);
-      }
+          setBookedSlots([]);
+        });
     }
   }, [date]);
 
@@ -261,7 +245,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
           ? generateRecurringDates(date, recurringType, recurringCount)
           : [date];
 
-        // Create all bookings
+        // Create all bookings in Firestore
         const bookings = [];
         for (const bookingDate of dates) {
           const booking = await createBooking(
@@ -270,7 +254,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
             serviceName || '',
             bookingDate,
             selectedTime,
-            customerEmail
+            customerEmail,
+            currentUser?.uid
           );
           bookings.push(booking);
         }

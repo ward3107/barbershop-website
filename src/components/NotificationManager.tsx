@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, BellRing, Volume2, VolumeX, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAllBookings } from '@/services/bookingService';
 
 // In-page alert component (prevents XSS by using React rendering)
 interface InPageAlertProps {
@@ -70,19 +71,23 @@ export default function NotificationManager() {
     return () => clearInterval(interval);
   }, [lastBookingId]);
 
-  const checkForNewBookings = () => {
-    const bookings = JSON.parse(localStorage.getItem('shokha_bookings') || '[]');
-    if (bookings.length > 0) {
-      const latestBooking = bookings[bookings.length - 1];
+  const checkForNewBookings = async () => {
+    try {
+      const bookings = await getAllBookings();
+      if (bookings.length > 0) {
+        const latestBooking = bookings[0]; // Already sorted by createdAt desc
 
-      // Check if this is a new booking we haven't notified about
-      if (latestBooking.id !== lastBookingId && latestBooking.status === 'pending') {
-        setLastBookingId(latestBooking.id);
-        showNotification(latestBooking);
-        if (soundEnabled) {
-          playNotificationSound();
+        // Check if this is a new booking we haven't notified about
+        if (latestBooking.id !== lastBookingId && latestBooking.status === 'pending') {
+          setLastBookingId(latestBooking.id || '');
+          showNotification(latestBooking);
+          if (soundEnabled) {
+            playNotificationSound();
+          }
         }
       }
+    } catch (error) {
+      console.error('Error checking for new bookings:', error);
     }
   };
 
