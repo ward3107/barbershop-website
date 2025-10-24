@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/Toast';
 import LandingPage from './components/LandingPage';
 import AdminPage from './components/AdminPage';
+import InstallAppPrompt from './components/InstallAppPrompt';
 
 function App() {
   // State to track if we're on admin page
@@ -30,6 +31,7 @@ function App() {
       <AuthProvider>
         <ToastProvider>
           {isAdminPage ? <AdminPage /> : <LandingPage />}
+          <InstallAppPrompt />
         </ToastProvider>
       </AuthProvider>
     </LanguageProvider>
